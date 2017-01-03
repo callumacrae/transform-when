@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>transform-when tests</title>
+
+	<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+</head>
+<body>
+
+<div id="mocha"></div>
+
+<div style="height: 5000px">
+	<div id="mock"></div>
+</div>
+
+<script>
+	if (!window.requestAnimationFrame) {
+		window.requestAnimationFrame = function (frame) {
+			setTimeout(frame, 1000 / 60);
+		};
+	}
+</script>
+
+<script src="../node_modules/babel-polyfill/dist/polyfill.js"></script>
+
+<script src="../dist/transform-when.js"></script>
+
+<script src="../node_modules/mocha/mocha.js"></script>
+<script src="../node_modules/should/should.js"></script>
+
+<script>
+	mocha.setup('bdd');
+</script>
+
+<!-- test files -->
+<script src="transformer.spec.js"></script>
+<script src="transform.spec.js"></script>
+<script src="transformObj.spec.js"></script>
+
+<!-- run tests -->
+<script>
+	mocha.run();
+</script>
+
+</body>
+</html>

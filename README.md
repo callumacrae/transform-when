@@ -94,36 +94,34 @@ properties set on the object are accessible using `this`.
 `transform-when` contains a couple **helper functions** to help us animate
 values between each other:
 
-#### `Transform.transform()`
+#### `Transformer.transform()`
 
 A simple scale function with three arguments, domain, range, and value:
 
 ```js
-Transform.transform([400, 600], [1, 0], 400); // 1
-Transform.transform([400, 600], [1, 0], 500); // 0.5
-Transform.transform([400, 600], [1, 0], 600); // 0
+Transformer.transform([400, 600], [1, 0], 400); // 1
+Transformer.transform([400, 600], [1, 0], 500); // 0.5
+Transformer.transform([400, 600], [1, 0], 600); // 0
 ```
 
 If only given two arguments, it'll return a function that can be called with
 the final value, but there is no performance advantage to doing this:
 
-(@todo)
-
 ```js
-const myTransform = Transform.transform([400, 600], [1, 0]);
+const myTransform = Transformer.transform([400, 600], [1, 0]);
 
 myTransform(400); // 1
 myTransform(500); // 0.5
 myTransform(600); // 0
 ```
 
-#### `Transform.transformObj()`
+#### `Transformer.transformObj()`
 
 A slightly more complicated, more powerful version of the previous function. It
 takes an object with input values and output values:
 
 ```js
-const myTransform = Transform.transformObj({
+const myTransform = Transformer.transformObj({
   400: 1,
   600: 0,
   1000: 0,
