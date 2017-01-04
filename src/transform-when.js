@@ -46,9 +46,11 @@ Transformer.prototype._frame = function transformFrame() {
 			}
 		}
 
+		const args = [x, y, this.i];
+
 		if (transform.transforms) {
 			const transforms = transform.transforms
-				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, x, y, this.i)})`)
+				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, args)})`)
 				.join(' ');
 
 			transform.el.setAttribute('transform', transform._originalTransform + transforms);
@@ -56,13 +58,13 @@ Transformer.prototype._frame = function transformFrame() {
 
 		if (transform.styles) {
 			for (let [ style, fn, unit = '' ] of transform.styles) {
-				transform.el.style[style] = callFn('styles', style, fn, transform, unit, x, y, this.i);
+				transform.el.style[style] = callFn('styles', style, fn, transform, unit, args);
 			}
 		}
 
 		if (transform.attrs) {
 			for (let [ attr, fn, unit = '' ] of transform.attrs) {
-				transform.el.setAttribute(attr, callFn('attrs', attr, fn, transform, unit, x, y, this.i));
+				transform.el.setAttribute(attr, callFn('attrs', attr, fn, transform, unit, args));
 			}
 		}
 	}
@@ -72,7 +74,7 @@ Transformer.prototype._frame = function transformFrame() {
 	requestAnimationFrame(this._frame.bind(this));
 };
 
-function callFn(type, name, fn, transform, unit, ...args) {
+function callFn(type, name, fn, transform, unit, args) {
 	const dps = {
 		'transforms:rotate': 1,
 		'transforms:scale': 3,
@@ -80,7 +82,7 @@ function callFn(type, name, fn, transform, unit, ...args) {
 		'styles:opacity': 2
 	};
 
-	let val = fn.call(transform, ...args);
+	let val = fn.apply(transform, args);
 
 	if (typeof val === 'number') {
 		const roundTo = typeof dps[type + ':' + name] === 'number' ? dps[type + ':' + name] : 3;
@@ -134,7 +136,7 @@ Transformer.transformObj = function transformObj(obj, loopBy, easing) {
 			return obj[keysBackwards[0]];
 		}
 
-		const fromIndex = keys.indexOf(keysBackwards.find((key) => (val >= key)));
+		const fromIndex = keys.length - 1 - keysBackwards.findIndex((key) => (val >= key));
 
 		const from = keys[fromIndex];
 		const to = keys[fromIndex + 1] || loopBy;
