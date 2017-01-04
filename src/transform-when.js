@@ -1,12 +1,8 @@
-function Transformer(transforms) {
+export default function Transformer(transforms) {
 	this.i = 0;
 	this.transforms = transforms;
 
 	this.start();
-}
-
-if (typeof module === 'object') {
-	module.exports = Transformer;
 }
 
 Transformer.prototype.stop = function stopTransforms() {
