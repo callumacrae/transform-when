@@ -25,20 +25,26 @@ Transformer.prototype._frame = function transformFrame() {
 	for (let transform of this.transforms) {
 		// Has to run before visible check
 		if (transform.transforms && this.i === 0) {
-			transform.el.dataset._originalTransform = (transform.el.getAttribute('transform') || '') + ' ';
+			each(transform.el, (el) => {
+				el.dataset._originalTransform = (el.getAttribute('transform') || '') + ' ';
+			});
 		}
 
 		if (transform.visible) {
 			if (y < transform.visible[0] || y > transform.visible[1]) {
-				if (!transform.el.dataset._originalDisplay) {
-					transform.el.dataset._originalDisplay = getComputedStyle(transform.el).display;
-				}
+				each(transform.el, (el) => {
+					if (!el.dataset._originalDisplay) {
+						el.dataset._originalDisplay = getComputedStyle(el).display;
+					}
 
-				transform.el.style.display = 'none';
+					el.style.display = 'none';
+				});
 
 				continue;
 			} else {
-				transform.el.style.display = transform.el.dataset._originalDisplay || 'inline';
+				each(transform.el, (el) => {
+					el.style.display = el.dataset._originalDisplay || 'inline';
+				});
 			}
 		}
 
@@ -49,18 +55,25 @@ Transformer.prototype._frame = function transformFrame() {
 				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, args)})`)
 				.join(' ');
 
-			transform.el.setAttribute('transform', transform.el.dataset._originalTransform + transforms);
+			each(transform.el, (el) => {
+				el.setAttribute('transform', el.dataset._originalTransform + transforms);
+			});
 		}
 
 		if (transform.styles) {
 			for (let [ style, fn, unit = '' ] of transform.styles) {
-				transform.el.style[style] = callFn('styles', style, fn, transform, unit, args);
+				const computed = callFn('styles', style, fn, transform, unit, args);
+
+				each(transform.el, (el) => {
+					el.style[style] = computed;
+				});
 			}
 		}
 
 		if (transform.attrs) {
 			for (let [ attr, fn, unit = '' ] of transform.attrs) {
-				transform.el.setAttribute(attr, callFn('attrs', attr, fn, transform, unit, args));
+				const computed = callFn('attrs', attr, fn, transform, unit, args);
+				each(transform.el, (el) => el.setAttribute(attr, computed));
 			}
 		}
 	}
@@ -141,3 +154,11 @@ Transformer.transformObj = function transformObj(obj, loopBy, easing) {
 		return Transformer.transform([Number(from), Number(to)], [obj[from], toVal], val);
 	};
 };
+
+function each(els, cb) {
+	if (els instanceof HTMLElement) {
+		cb(els);
+	} else {
+		[].slice.call(els).forEach(cb);
+	}
+}

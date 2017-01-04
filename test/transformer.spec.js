@@ -1,4 +1,6 @@
 var mock = document.querySelector('#mock');
+var mock2 = document.querySelector('#mock2');
+var mocks = document.querySelectorAll('.mock');
 
 describe('Transformer', function () {
 	beforeEach(function () {
@@ -117,5 +119,35 @@ describe('Transformer', function () {
 			transformer.stop();
 			done();
 		}, 40);
+	});
+
+	it('should support NodeLists', function (done) {
+		var transformer = new Transformer([
+			{
+				el: mocks,
+				styles: [
+					['opacity', (x, y, i) => {
+						return (y < 5) ? 1 : 0;
+					}]
+				]
+			}
+		]);
+
+
+		scroll(0, 20);
+
+		setTimeout(function () {
+			getComputedStyle(mock).opacity.should.equal('0');
+			getComputedStyle(mock2).opacity.should.equal('0');
+
+			scroll(0, 0);
+
+			setTimeout(function () {
+				getComputedStyle(mock).opacity.should.equal('1');
+				getComputedStyle(mock2).opacity.should.equal('1');
+				transformer.stop();
+				done();
+			}, 20);
+		}, 20);
 	});
 });
