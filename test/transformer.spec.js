@@ -132,7 +132,7 @@ describe('Transformer', function () {
 			{
 				el: mocks,
 				styles: [
-					['opacity', (x, y, i) => {
+					['opacity', function (x, y, i) {
 						return (y < 5) ? 1 : 0;
 					}]
 				]
