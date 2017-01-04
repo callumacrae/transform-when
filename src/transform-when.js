@@ -25,7 +25,7 @@ Transformer.prototype._frame = function transformFrame() {
 	for (let transform of this.transforms) {
 		// Has to run before visible check
 		if (transform.transforms && this.i === 0) {
-			transform._originalTransform = (transform.el.getAttribute('transform') || '') + ' ';
+			transform.el.dataset._originalTransform = (transform.el.getAttribute('transform') || '') + ' ';
 		}
 
 		if (transform.visible) {
@@ -49,7 +49,7 @@ Transformer.prototype._frame = function transformFrame() {
 				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, args)})`)
 				.join(' ');
 
-			transform.el.setAttribute('transform', transform._originalTransform + transforms);
+			transform.el.setAttribute('transform', transform.el.dataset._originalTransform + transforms);
 		}
 
 		if (transform.styles) {

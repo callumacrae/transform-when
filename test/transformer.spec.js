@@ -70,7 +70,7 @@ describe('Transformer', function () {
 	});
 
 	it('should support visible property', function (done) {
-		var transform = new Transformer([
+		var transformer = new Transformer([
 			{
 				el: mock,
 				visible: [0, 10]
@@ -86,8 +86,36 @@ describe('Transformer', function () {
 
 			setTimeout(function () {
 				getComputedStyle(mock).display.should.equal('block');
+				transformer.stop();
 				done();
 			}, 20);
 		}, 20);
+	});
+
+	it('should leave original transforms alone', function (done) {
+		var transformer = new Transformer([
+			{
+				el: mock,
+				transforms: [
+					['scale', function (x, y, i) {
+						return (y < 5) ? 1 : 2;
+					}]
+				]
+			}
+		]);
+
+		mock.setAttribute('transform', 'translate(100, 200)');
+
+		setTimeout(function () {
+			mock.getAttribute('transform').should.containEql('translate(100, 200)');
+
+			scroll(0, 10);
+		}, 20);
+
+		setTimeout(function () {
+			mock.getAttribute('transform').should.containEql('translate(100, 200)');
+			transformer.stop();
+			done();
+		}, 40);
 	});
 });
