@@ -26,7 +26,12 @@ Transformer.prototype._frame = function transformFrame() {
 		// Has to run before visible check
 		if (transform.transforms && this.i === 0) {
 			each(transform.el, (el) => {
-				el.dataset._originalTransform = (el.getAttribute('transform') || '') + ' ';
+				if (el instanceof SVGElement) {
+					el.dataset._originalTransform = (el.getAttribute('transform') || '') + ' ';
+				} else {
+					const original = getComputedStyle(el).transform;
+					el.dataset._originalTransform = original === 'none' ? '' : `${original} `;
+				}
 			});
 		}
 
@@ -56,7 +61,11 @@ Transformer.prototype._frame = function transformFrame() {
 				.join(' ');
 
 			each(transform.el, (el) => {
-				el.setAttribute('transform', el.dataset._originalTransform + transforms);
+				if (el instanceof SVGElement) {
+					el.setAttribute('transform', el.dataset._originalTransform + transforms);
+				} else {
+					el.style.transform = el.dataset._originalTransform + transforms;
+				}
 			});
 		}
 
@@ -156,7 +165,7 @@ Transformer.transformObj = function transformObj(obj, loopBy, easing) {
 };
 
 function each(els, cb) {
-	if (els instanceof HTMLElement) {
+	if (els instanceof Element) {
 		cb(els);
 	} else {
 		[].slice.call(els).forEach(cb);
