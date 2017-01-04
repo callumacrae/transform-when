@@ -30,15 +30,15 @@ Transformer.prototype._frame = function transformFrame() {
 
 		if (transform.visible) {
 			if (y < transform.visible[0] || y > transform.visible[1]) {
-				if (!transform._originalDisplay) {
-					transform._originalDisplay = getComputedStyle(transform.el).display;
+				if (!transform.el.dataset._originalDisplay) {
+					transform.el.dataset._originalDisplay = getComputedStyle(transform.el).display;
 				}
 
 				transform.el.style.display = 'none';
 
 				continue;
 			} else {
-				transform.el.style.display = transform._originalDisplay || 'inline';
+				transform.el.style.display = transform.el.dataset._originalDisplay || 'inline';
 			}
 		}
 

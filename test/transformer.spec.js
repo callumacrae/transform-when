@@ -68,4 +68,26 @@ describe('Transformer', function () {
 			done();
 		}, 40);
 	});
+
+	it('should support visible property', function (done) {
+		var transform = new Transformer([
+			{
+				el: mock,
+				visible: [0, 10]
+			}
+		]);
+
+		scroll(0, 20);
+
+		setTimeout(function () {
+			getComputedStyle(mock).display.should.equal('none');
+
+			scroll(0, 0);
+
+			setTimeout(function () {
+				getComputedStyle(mock).display.should.equal('block');
+				done();
+			}, 20);
+		}, 20);
+	});
 });
