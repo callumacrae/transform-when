@@ -30,7 +30,7 @@ Transformer.prototype._frame = function transformFrame() {
 					el.dataset._originalTransform = (el.getAttribute('transform') || '') + ' ';
 				} else {
 					const original = getComputedStyle(el).transform;
-					el.dataset._originalTransform = original === 'none' ? '' : `${original} `;
+					el.dataset._originalTransform = !original || original === 'none' ? '' : `${original} `;
 				}
 			});
 		}

@@ -22,7 +22,6 @@ describe('Transformer', function () {
 		Transformer.should.be.a.Function();
 	});
 
-	transformer;
 	it('should init', function () {
 		transformer = new Transformer([]);
 		transformer.active.should.be.true();
@@ -46,11 +45,13 @@ describe('Transformer', function () {
 		]);
 
 		setTimeout(function () {
-			getComputedStyle(mock).transform.should.containEql('matrix(1, 0, 0, 1, 0, 0)');
+			mock.style.transform.should.not.containEql('undefined');
+			mock.style.transform.should.containEql('scale(1)');
 		}, 40);
 
 		setTimeout(function () {
-			getComputedStyle(mock).transform.should.containEql('matrix(2, 0, 0, 2, 0, 0)');
+			mock.style.transform.should.not.containEql('undefined');
+			mock.style.transform.should.containEql('scale(2)');
 			done();
 		}, 120);
 	});
@@ -68,13 +69,15 @@ describe('Transformer', function () {
 		]);
 
 		setTimeout(function () {
-			getComputedStyle(mock).transform.should.containEql('matrix(1, 0, 0, 1, 0, 0)');
+			mock.style.transform.should.not.containEql('undefined');
+			mock.style.transform.should.containEql('scale(1)');
 
 			scroll(0, 10);
 		}, 20);
 
 		setTimeout(function () {
-			getComputedStyle(mock).transform.should.containEql('matrix(2, 0, 0, 2, 0, 0)');
+			mock.style.transform.should.not.containEql('undefined');
+			mock.style.transform.should.containEql('scale(2)');
 			done();
 		}, 40);
 	});
