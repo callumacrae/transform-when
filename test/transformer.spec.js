@@ -45,13 +45,11 @@ describe('Transformer', function () {
 		]);
 
 		setTimeout(function () {
-			mock.style.transform.should.not.containEql('undefined');
-			mock.style.transform.should.containEql('scale(1)');
+			mock.style.transform.should.equal('scale(1)');
 		}, 40);
 
 		setTimeout(function () {
-			mock.style.transform.should.not.containEql('undefined');
-			mock.style.transform.should.containEql('scale(2)');
+			mock.style.transform.should.equal('scale(2)');
 			done();
 		}, 120);
 	});
@@ -69,15 +67,13 @@ describe('Transformer', function () {
 		]);
 
 		setTimeout(function () {
-			mock.style.transform.should.not.containEql('undefined');
-			mock.style.transform.should.containEql('scale(1)');
+			mock.style.transform.should.equal('scale(1)');
 
 			scroll(0, 10);
 		}, 20);
 
 		setTimeout(function () {
-			mock.style.transform.should.not.containEql('undefined');
-			mock.style.transform.should.containEql('scale(2)');
+			mock.style.transform.should.equal('scale(2)');
 			done();
 		}, 40);
 	});
