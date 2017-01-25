@@ -68,4 +68,39 @@ describe('Transformer.transformObj()', function () {
 		transformFn(3.75).should.equal(48.4375);
 		transformFn(4).should.equal(0);
 	});
+
+	it('should work with non-integers', function () {
+		var transformFn = Transformer.transformObj({
+			0: 0,
+			0.5: 100,
+			1: 150,
+			2.0001: 200
+		});
+
+		Should(transformFn).be.a.Function();
+
+		transformFn(0).should.be.approximately(0, 0.1);
+		transformFn(0.25).should.be.approximately(50, 0.1);
+		transformFn(0.5).should.be.approximately(100, 0.1);
+		transformFn(0.75).should.be.approximately(125, 0.1);
+		transformFn(1).should.be.approximately(150, 0.1);
+		transformFn(1.5).should.be.approximately(175, 0.1);
+		transformFn(2).should.be.approximately(200, 0.1);
+	});
+
+	it('should work with out of order numbers', function () {
+		var transformFn = Transformer.transformObj({
+			4665: 1,
+			5287: 0,
+			4540.599999999999: 0,
+			5162.6: 1
+		});
+
+		Should(transformFn).be.a.Function();
+
+		transformFn(4500).should.equal(0);
+		transformFn(4700).should.equal(1);
+		transformFn(5100).should.equal(1);
+		transformFn(5300).should.equal(0);
+	});
 });
