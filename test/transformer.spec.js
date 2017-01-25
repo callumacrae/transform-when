@@ -123,6 +123,29 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	it('should not move display set using css to style attr when toggling visibility', function (done) {
+		transformer = new Transformer([
+			{
+				el: mock,
+				visible: [0, 10]
+			}
+		]);
+
+		scroll(0, 20);
+
+		setTimeout(function () {
+			getComputedStyle(mock).display.should.equal('none');
+
+			scroll(0, 0);
+
+			setTimeout(function () {
+				getComputedStyle(mock).display.should.equal('block');
+				Should(mock.style.display).not.be.ok;
+				done();
+			}, 20);
+		}, 20);
+	});
+
 	it('should leave original transforms alone', function (done) {
 		transformer = new Transformer([
 			{

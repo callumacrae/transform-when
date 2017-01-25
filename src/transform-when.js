@@ -53,7 +53,7 @@ Transformer.prototype._frame = function transformFrame() {
 			if (isVisible) {
 				each(transform.el, (el) => {
 					if (!el.dataset._originalDisplay) {
-						el.dataset._originalDisplay = getComputedStyle(el).display;
+						el.dataset._originalDisplay = el.style.display;
 					}
 
 					el.style.display = 'none';
@@ -62,7 +62,7 @@ Transformer.prototype._frame = function transformFrame() {
 				continue;
 			} else {
 				each(transform.el, (el) => {
-					el.style.display = el.dataset._originalDisplay || 'inline';
+					el.style.display = el.dataset._originalDisplay;
 				});
 			}
 		}
