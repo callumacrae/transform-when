@@ -1,6 +1,7 @@
 export default function Transformer(transforms) {
 	this.i = 0;
 	this.transforms = transforms;
+	this.visible = undefined;
 
 	this.start();
 }
@@ -12,6 +13,10 @@ Transformer.prototype.stop = function stopTransforms() {
 Transformer.prototype.start = function startTransforms() {
 	this.active = true;
 	requestAnimationFrame(this._frame.bind(this));
+};
+
+Transformer.prototype.setVisible = function setGlobalVisible(visible) {
+	this.visible = visible;
 };
 
 Transformer.prototype._frame = function transformFrame() {
@@ -35,8 +40,17 @@ Transformer.prototype._frame = function transformFrame() {
 			});
 		}
 
-		if (transform.visible) {
-			if (y < transform.visible[0] || y > transform.visible[1]) {
+		if (transform.visible || this.visible) {
+			let isVisible = true;
+			if (this.visible) {
+				isVisible = y < this.visible[0] || y > this.visible[1];
+			}
+
+			if (isVisible && transform.visible) {
+				isVisible = y < transform.visible[0] || y > transform.visible[1];
+			}
+
+			if (isVisible) {
 				each(transform.el, (el) => {
 					if (!el.dataset._originalDisplay) {
 						el.dataset._originalDisplay = getComputedStyle(el).display;

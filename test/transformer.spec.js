@@ -100,6 +100,29 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	it('should support global visible method', function (done) {
+		transformer = new Transformer([
+			{
+				el: mock,
+			}
+		]);
+
+		transformer.setVisible([0, 10]);
+
+		scroll(0, 20);
+
+		setTimeout(function () {
+			getComputedStyle(mock).display.should.equal('none');
+
+			scroll(0, 0);
+
+			setTimeout(function () {
+				getComputedStyle(mock).display.should.equal('block');
+				done();
+			}, 20);
+		}, 20);
+	});
+
 	it('should leave original transforms alone', function (done) {
 		transformer = new Transformer([
 			{

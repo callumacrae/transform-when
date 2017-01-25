@@ -84,7 +84,9 @@ which can be very useful for running animations through time: it's called about
 The `visible` property is optional, but will improve performance on pages with
 lots of elements and transforms: it tests whether the vertical scroll value of
 the page is between the two numbers, and if it isn't, it sets `display: none`
-and doesn't attempt to calculate the properties.
+and doesn't attempt to calculate the properties. You can also use the
+`transforms.setVisible()` method to set the `visible` property on all items
+of the transform at once.
 
 The `this` value in transform functions is set to the transform itself, so any
 properties set on the object are accessible using `this`.
