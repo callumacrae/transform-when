@@ -26,7 +26,7 @@ Transformer.prototype._frame = function transformFrame() {
 		// Has to run before visible check
 		if (transform.transforms && this.i === 0) {
 			each(transform.el, (el) => {
-				if (el instanceof SVGElement) {
+				if (useTransformAttr(el)) {
 					el.dataset._originalTransform = (el.getAttribute('transform') || '') + ' ';
 				} else {
 					const original = getComputedStyle(el).transform;
@@ -61,7 +61,7 @@ Transformer.prototype._frame = function transformFrame() {
 				.join(' ');
 
 			each(transform.el, (el) => {
-				if (el instanceof SVGElement) {
+				if (useTransformAttr(el)) {
 					el.setAttribute('transform', el.dataset._originalTransform + transforms);
 				} else {
 					el.style.transform = el.dataset._originalTransform + transforms;
@@ -132,7 +132,7 @@ Transformer.easings = {
 };
 
 Transformer.transformObj = function transformObj(obj, loopBy, easing) {
-	const keys = Object.keys(obj);
+	const keys = Object.keys(obj).sort((a, b) => a - b);
 	const keysBackwards = keys.slice().reverse();
 
 	if (typeof easing === 'string') {
@@ -170,4 +170,8 @@ function each(els, cb) {
 	} else {
 		[].slice.call(els).forEach(cb);
 	}
+}
+
+function useTransformAttr(el) {
+	return (el instanceof SVGElement && el.tagName.toUpperCase() !== 'SVG');
 }
