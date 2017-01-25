@@ -52,8 +52,8 @@ Transformer.prototype._frame = function transformFrame() {
 
 			if (isVisible) {
 				each(transform.el, (el) => {
-					if (!el.dataset._originalDisplay) {
-						el.dataset._originalDisplay = el.style.display;
+					if (typeof el.dataset._originalDisplay === 'undefined') {
+						el.dataset._originalDisplay = el.style.display || '';
 					}
 
 					el.style.display = 'none';
