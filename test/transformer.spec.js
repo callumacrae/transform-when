@@ -14,7 +14,7 @@ describe('Transformer', function () {
 
 	afterEach(function () {
 		if (transformer) {
-			transformer.stop();
+			transformer.reset();
 		}
 	});
 
@@ -149,7 +149,7 @@ describe('Transformer', function () {
 	it('should leave original transforms alone', function (done) {
 		transformer = new Transformer([
 			{
-				el: mock,
+				el: svgMock,
 				transforms: [
 					['scale', function (x, y, i) {
 						return (y < 5) ? 1 : 2;
@@ -158,18 +158,47 @@ describe('Transformer', function () {
 			}
 		]);
 
-		mock.setAttribute('transform', 'translate(100, 200)');
+		svgMock.setAttribute('transform', 'translate(100, 200)');
 
 		setTimeout(function () {
-			mock.getAttribute('transform').should.containEql('translate(100, 200)');
+			svgMock.getAttribute('transform').should.containEql('scale(1)');
+			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
 
 			scroll(0, 10);
 		}, 20);
 
 		setTimeout(function () {
-			mock.getAttribute('transform').should.containEql('translate(100, 200)');
+			svgMock.getAttribute('transform').should.containEql('scale(2)');
+			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
 			done();
 		}, 40);
+	});
+
+	it('should unset transforms on reset', function (done) {
+		transformer = new Transformer([
+			{
+				el: svgMock,
+				transforms: [
+					['scale', function (x, y, i) {
+						return (y < 5) ? 1 : 2;
+					}]
+				]
+			}
+		]);
+
+		svgMock.setAttribute('transform', 'translate(100, 200)');
+
+		setTimeout(function () {
+			svgMock.getAttribute('transform').should.containEql('scale(');
+			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
+			transformer.reset();
+		}, 50);
+
+		setTimeout(function () {
+			svgMock.getAttribute('transform').should.not.containEql('scale(');
+			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
+			done();
+		}, 100);
 	});
 
 	it('should support NodeLists', function (done) {

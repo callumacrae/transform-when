@@ -153,6 +153,11 @@ be called to stop the animations from running.
 
 There's also a `.start()` method that can be used to start it again.
 
+### Resetting the animations
+
+To restore the elements to their original transforms and visiblities, call
+`.reset()` on the transformer you want to reset.
+
 
 ## License
 

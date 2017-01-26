@@ -15,6 +15,44 @@ Transformer.prototype.start = function startTransforms() {
 	requestAnimationFrame(this._frame.bind(this));
 };
 
+Transformer.prototype.reset = function resetTransforms() {
+	this.stop();
+
+	for (let transform of this.transforms) {
+		if (transform.transforms) {
+			each(transform.el, (el) => {
+				if (useTransformAttr(el)) {
+					el.setAttribute('transform', el.dataset._originalTransform);
+				} else {
+					el.style.transform = el.dataset._originalTransform;
+				}
+			});
+		}
+
+		if (transform.visible || this.visible) {
+			each(transform.el, (el) => {
+				el.style.display = el.dataset._originalDisplay;
+			});
+		}
+
+		// @todo: should styles be unset?
+		// if (transform.styles) {
+		// 	for (let [ style, fn, unit = '' ] of transform.styles) {
+		// 		each(transform.el, (el) => {
+		// 			el.style[style] = '';
+		// 		});
+		// 	}
+		// }
+
+		// @todo: should attrs be unset?
+		// if (transform.attrs) {
+		// 	for (let [ attr, fn, unit = '' ] of transform.attrs) {
+		// 		each(transform.el, (el) => el.removeAttribute(attr));
+		// 	}
+		// }
+	}
+};
+
 Transformer.prototype.setVisible = function setGlobalVisible(visible) {
 	this.visible = visible;
 };
@@ -41,16 +79,16 @@ Transformer.prototype._frame = function transformFrame() {
 		}
 
 		if (transform.visible || this.visible) {
-			let isVisible = true;
+			let isHidden = true;
 			if (this.visible) {
-				isVisible = y < this.visible[0] || y > this.visible[1];
+				isHidden = y < this.visible[0] || y > this.visible[1];
 			}
 
-			if (isVisible && transform.visible) {
-				isVisible = y < transform.visible[0] || y > transform.visible[1];
+			if (isHidden && transform.visible) {
+				isHidden = y < transform.visible[0] || y > transform.visible[1];
 			}
 
-			if (isVisible) {
+			if (isHidden) {
 				each(transform.el, (el) => {
 					if (typeof el.dataset._originalDisplay === 'undefined') {
 						el.dataset._originalDisplay = el.style.display || '';
