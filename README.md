@@ -2,6 +2,10 @@
 
 > A library for handing animations combining page position and time, written at [SamKnows].
 
+![](https://giant.gfycat.com/ScarceImaginativeLamprey.gif)
+
+(For a full demo at 60fps, see: coming soon)
+
 ## Installation
 
 ```
