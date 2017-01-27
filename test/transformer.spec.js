@@ -4,15 +4,18 @@ var mocks = document.querySelectorAll('.mock');
 var svgMock = document.querySelector('#svg-mock');
 
 describe('Transformer', function () {
+	var interval;
 	var transformer;
 
 	beforeEach(function () {
 		mock.removeAttribute('transform');
 		mock.style.transform = 'none';
+		svgMock.removeAttribute('transform');
 		scroll(0, 0);
 	});
 
 	afterEach(function () {
+		clearInterval(interval);
 		if (transformer) {
 			transformer.reset();
 		}
@@ -44,14 +47,18 @@ describe('Transformer', function () {
 			}
 		]);
 
-		setTimeout(function () {
-			mock.style.transform.should.equal('scale(1)');
-		}, 40);
+		interval = setInterval(function () {
+			if (mock.style.transform === 'scale(1)') {
+				clearInterval(interval);
 
-		setTimeout(function () {
-			mock.style.transform.should.equal('scale(2)');
-			done();
-		}, 120);
+				interval = setInterval(function () {
+					if (mock.style.transform === 'scale(2)') {
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
+		}, 20);
 	});
 
 	it('should change elements by y', function (done) {
@@ -66,16 +73,19 @@ describe('Transformer', function () {
 			}
 		]);
 
-		setTimeout(function () {
-			mock.style.transform.should.equal('scale(1)');
+		interval = setInterval(function () {
+			if (mock.style.transform === 'scale(1)') {
+				scroll(0, 10);
+				clearInterval(interval);
 
-			scroll(0, 10);
+				interval = setInterval(function () {
+					if (mock.style.transform === 'scale(2)') {
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
 		}, 20);
-
-		setTimeout(function () {
-			mock.style.transform.should.equal('scale(2)');
-			done();
-		}, 40);
 	});
 
 	it('should support visible property', function (done) {
@@ -88,15 +98,18 @@ describe('Transformer', function () {
 
 		scroll(0, 20);
 
-		setTimeout(function () {
-			getComputedStyle(mock).display.should.equal('none');
+		interval = setInterval(function () {
+			if (getComputedStyle(mock).display === 'none') {
+				scroll(0, 0);
+				clearInterval(interval);
 
-			scroll(0, 0);
-
-			setTimeout(function () {
-				getComputedStyle(mock).display.should.equal('block');
-				done();
-			}, 20);
+				interval = setInterval(function () {
+					if (getComputedStyle(mock).display === 'block') {
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
 		}, 20);
 	});
 
@@ -111,15 +124,18 @@ describe('Transformer', function () {
 
 		scroll(0, 20);
 
-		setTimeout(function () {
-			getComputedStyle(mock).display.should.equal('none');
+		interval = setInterval(function () {
+			if (getComputedStyle(mock).display === 'none') {
+				scroll(0, 0);
+				clearInterval(interval);
 
-			scroll(0, 0);
-
-			setTimeout(function () {
-				getComputedStyle(mock).display.should.equal('block');
-				done();
-			}, 20);
+				interval = setInterval(function () {
+					if (getComputedStyle(mock).display === 'block') {
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
 		}, 20);
 	});
 
@@ -133,16 +149,19 @@ describe('Transformer', function () {
 
 		scroll(0, 20);
 
-		setTimeout(function () {
-			getComputedStyle(mock).display.should.equal('none');
+		interval = setInterval(function () {
+			if (getComputedStyle(mock).display === 'none') {
+				scroll(0, 0);
+				clearInterval(interval);
 
-			scroll(0, 0);
-
-			setTimeout(function () {
-				getComputedStyle(mock).display.should.equal('block');
-				Should(mock.style.display).not.be.ok;
-				done();
-			}, 20);
+				interval = setInterval(function () {
+					if (getComputedStyle(mock).display === 'block') {
+						Should(mock.style.display).not.be.ok;
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
 		}, 20);
 	});
 
@@ -160,18 +179,20 @@ describe('Transformer', function () {
 
 		svgMock.setAttribute('transform', 'translate(100, 200)');
 
-		setTimeout(function () {
-			svgMock.getAttribute('transform').should.containEql('scale(1)');
-			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
+		interval = setInterval(function () {
+			if (svgMock.getAttribute('transform') === 'translate(100, 200) scale(1)') {
+				scroll(0, 10);
 
-			scroll(0, 10);
+				clearInterval(interval);
+
+				interval = setInterval(function () {
+					if (svgMock.getAttribute('transform') === 'translate(100, 200) scale(2)') {
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
 		}, 20);
-
-		setTimeout(function () {
-			svgMock.getAttribute('transform').should.containEql('scale(2)');
-			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
-			done();
-		}, 40);
 	});
 
 	it('should unset transforms on reset', function (done) {
@@ -188,17 +209,23 @@ describe('Transformer', function () {
 
 		svgMock.setAttribute('transform', 'translate(100, 200)');
 
-		setTimeout(function () {
-			svgMock.getAttribute('transform').should.containEql('scale(');
-			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
-			transformer.reset();
-		}, 50);
+		interval = setInterval(function () {
+			if (svgMock.getAttribute('transform').indexOf('scale(') !== -1) {
+				svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
 
-		setTimeout(function () {
-			svgMock.getAttribute('transform').should.not.containEql('scale(');
-			svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
-			done();
-		}, 100);
+				transformer.reset();
+
+				clearInterval(interval);
+
+				interval = setInterval(function () {
+					if (svgMock.getAttribute('transform').indexOf('scale(') === -1) {
+						svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
+		}, 20);
 	});
 
 	it('should support NodeLists', function (done) {
@@ -216,17 +243,22 @@ describe('Transformer', function () {
 
 		scroll(0, 20);
 
-		setTimeout(function () {
-			getComputedStyle(mock).opacity.should.equal('0');
-			getComputedStyle(mock2).opacity.should.equal('0');
+		interval = setInterval(function () {
+			if (getComputedStyle(mock).opacity === '0') {
+				getComputedStyle(mock2).opacity.should.equal('0');
 
-			scroll(0, 0);
+				scroll(0, 0);
 
-			setTimeout(function () {
-				getComputedStyle(mock).opacity.should.equal('1');
-				getComputedStyle(mock2).opacity.should.equal('1');
-				done();
-			}, 20);
+				clearInterval(interval);
+
+				interval = setInterval(function () {
+					if (getComputedStyle(mock).opacity === '1') {
+						getComputedStyle(mock2).opacity.should.equal('1');
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
 		}, 20);
 	});
 
@@ -242,13 +274,18 @@ describe('Transformer', function () {
 			}
 		]);
 
-		setTimeout(function () {
-			svgMock.getAttribute('transform').should.containEql('scale(1)');
-		}, 40);
+		interval = setInterval(function () {
+			if (svgMock.getAttribute('transform').trim() === 'scale(1)') {
 
-		setTimeout(function () {
-			svgMock.getAttribute('transform').should.containEql('scale(2)');
-			done();
-		}, 120);
+				clearInterval(interval);
+
+				interval = setInterval(function () {
+					if (svgMock.getAttribute('transform').trim() === 'scale(2)') {
+						clearInterval(interval);
+						done();
+					}
+				}, 20);
+			}
+		}, 20);
 	});
 });
