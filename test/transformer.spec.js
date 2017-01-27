@@ -177,16 +177,16 @@ describe('Transformer', function () {
 			}
 		]);
 
-		svgMock.setAttribute('transform', 'translate(100, 200)');
+		svgMock.setAttribute('transform', 'translate(100 200)');
 
 		interval = setInterval(function () {
-			if (svgMock.getAttribute('transform') === 'translate(100, 200) scale(1)') {
+			if (svgMock.getAttribute('transform') === 'translate(100 200) scale(1)') {
 				scroll(0, 10);
 
 				clearInterval(interval);
 
 				interval = setInterval(function () {
-					if (svgMock.getAttribute('transform') === 'translate(100, 200) scale(2)') {
+					if (svgMock.getAttribute('transform') === 'translate(100 200) scale(2)') {
 						clearInterval(interval);
 						done();
 					}
@@ -207,11 +207,11 @@ describe('Transformer', function () {
 			}
 		]);
 
-		svgMock.setAttribute('transform', 'translate(100, 200)');
+		svgMock.setAttribute('transform', 'translate(100 200)');
 
 		interval = setInterval(function () {
 			if (svgMock.getAttribute('transform').indexOf('scale(') !== -1) {
-				svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
+				svgMock.getAttribute('transform').should.containEql('translate(100 200)');
 
 				transformer.reset();
 
@@ -219,7 +219,7 @@ describe('Transformer', function () {
 
 				interval = setInterval(function () {
 					if (svgMock.getAttribute('transform').indexOf('scale(') === -1) {
-						svgMock.getAttribute('transform').should.containEql('translate(100, 200)');
+						svgMock.getAttribute('transform').should.containEql('translate(100 200)');
 						clearInterval(interval);
 						done();
 					}

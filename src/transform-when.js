@@ -22,16 +22,16 @@ Transformer.prototype.reset = function resetTransforms() {
 		if (transform.transforms) {
 			each(transform.el, (el) => {
 				if (useTransformAttr(el)) {
-					el.setAttribute('transform', el.dataset._originalTransform);
+					el.setAttribute('transform', getData(el, 'originalTransform'));
 				} else {
-					el.style.transform = el.dataset._originalTransform;
+					el.style.transform = getData(el, 'originalTransform');
 				}
 			});
 		}
 
 		if (transform.visible || this.visible) {
 			each(transform.el, (el) => {
-				el.style.display = el.dataset._originalDisplay;
+				el.style.display = getData(el, 'originalDisplay');
 			});
 		}
 
@@ -62,18 +62,18 @@ Transformer.prototype._frame = function transformFrame() {
 		return;
 	}
 
-	const x = window.scrollX;
-	const y = window.scrollY;
+	const x = typeof window.scrollX === 'number' ? window.scrollX : window.pageXOffset;
+	const y = typeof window.scrollY === 'number' ? window.scrollY : window.pageYOffset;
 
 	for (let transform of this.transforms) {
 		// Has to run before visible check
 		if (transform.transforms && this.i === 0) {
 			each(transform.el, (el) => {
 				if (useTransformAttr(el)) {
-					el.dataset._originalTransform = (el.getAttribute('transform') || '') + ' ';
+					setData(el, 'originalTransform', (el.getAttribute('transform') || '') + ' ');
 				} else {
-					const original = getComputedStyle(el).transform;
-					el.dataset._originalTransform = !original || original === 'none' ? '' : `${original} `;
+					const original = el.style.transform;
+					setData(el, 'originalTransform', !original || original === 'none' ? '' : `${original} `);
 				}
 			});
 		}
@@ -90,8 +90,8 @@ Transformer.prototype._frame = function transformFrame() {
 
 			if (isHidden) {
 				each(transform.el, (el) => {
-					if (typeof el.dataset._originalDisplay === 'undefined') {
-						el.dataset._originalDisplay = el.style.display || '';
+					if (typeof getData(el, 'originalDisplay') === 'undefined') {
+						setData(el, 'originalDisplay', el.style.display || '');
 					}
 
 					el.style.display = 'none';
@@ -100,7 +100,7 @@ Transformer.prototype._frame = function transformFrame() {
 				continue;
 			} else {
 				each(transform.el, (el) => {
-					el.style.display = el.dataset._originalDisplay;
+					el.style.display = getData(el, 'originalDisplay');
 				});
 			}
 		}
@@ -114,9 +114,9 @@ Transformer.prototype._frame = function transformFrame() {
 
 			each(transform.el, (el) => {
 				if (useTransformAttr(el)) {
-					el.setAttribute('transform', el.dataset._originalTransform + transforms);
+					el.setAttribute('transform', getData(el, 'originalTransform') + transforms);
 				} else {
-					el.style.transform = el.dataset._originalTransform + transforms;
+					el.style.transform = getData(el, 'originalTransform') + transforms;
 				}
 			});
 		}
@@ -226,4 +226,30 @@ function each(els, cb) {
 
 function useTransformAttr(el) {
 	return (el instanceof SVGElement && el.tagName.toUpperCase() !== 'SVG');
+}
+
+const dataStore = [];
+function setData(el, key, value) {
+	let elStore = dataStore.find((store) => store.el === el);
+
+	if (!elStore) {
+		dataStore.push({
+			el,
+			data: {},
+		});
+
+		elStore = dataStore[dataStore.length - 1];
+	}
+
+	elStore.data[key] = value;
+}
+
+function getData(el, key) {
+	let elStore = dataStore.find((store) => store.el === el);
+
+	if (!elStore) {
+		return undefined;
+	}
+
+	return elStore.data[key];
 }
