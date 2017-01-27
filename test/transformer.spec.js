@@ -290,7 +290,7 @@ describe('Transformer', function () {
 	});
 
 	it('should pass in requested arguments only', function (done) {
-		let lastY = -1;
+		var lastY = -1;
 
 		transformer = new Transformer([
 			{
@@ -315,7 +315,7 @@ describe('Transformer', function () {
 	});
 
 	it('should not call fn if request args unchanged', function () {
-		let called = 0;
+		var called = 0;
 
 		transformer = new Transformer([
 			{
