@@ -1,3 +1,5 @@
+const frames = [];
+
 export default function Transformer(transforms) {
 	this.i = 0;
 	this.transforms = transforms;
@@ -6,16 +8,39 @@ export default function Transformer(transforms) {
 	this._lastX = -1;
 	this._lastY = -1;
 
+	this._boundFrameFn = (x, y) => this._frame(x, y);
+
 	this.start();
 }
 
+function runFrames() {
+	const x = typeof window.scrollX === 'number' ? window.scrollX : window.pageXOffset;
+	const y = typeof window.scrollY === 'number' ? window.scrollY : window.pageYOffset;
+
+	for (let frame of frames) {
+		try {
+			frame(x, y);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	requestAnimationFrame(runFrames);
+}
+requestAnimationFrame(runFrames);
+
 Transformer.prototype.stop = function stopTransforms() {
 	this.active = false;
+	if (frames.includes(this._boundFrameFn)) {
+		frames.splice(frames.indexOf(this._boundFrameFn), 1);
+	}
 };
 
 Transformer.prototype.start = function startTransforms() {
 	this.active = true;
-	requestAnimationFrame(this._frame.bind(this));
+	if (!frames.includes(this._boundFrameFn)) {
+		frames.push(this._boundFrameFn);
+	}
 };
 
 Transformer.prototype.reset = function resetTransforms() {
@@ -60,13 +85,10 @@ Transformer.prototype.setVisible = function setGlobalVisible(visible) {
 	this.visible = visible;
 };
 
-Transformer.prototype._frame = function transformFrame() {
+Transformer.prototype._frame = function transformFrame(x, y) {
 	if (!this.active) {
 		return;
 	}
-
-	const x = typeof window.scrollX === 'number' ? window.scrollX : window.pageXOffset;
-	const y = typeof window.scrollY === 'number' ? window.scrollY : window.pageYOffset;
 
 	for (let transform of this.transforms) {
 		// Has to run before visible check
@@ -154,8 +176,6 @@ Transformer.prototype._frame = function transformFrame() {
 	this.i++;
 	this._lastX = x;
 	this._lastY = y;
-
-	requestAnimationFrame(this._frame.bind(this));
 };
 
 Transformer.UNCHANGED = Symbol('unchanged');
