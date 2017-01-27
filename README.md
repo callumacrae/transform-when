@@ -91,6 +91,34 @@ of the transform at once.
 The `this` value in transform functions is set to the transform itself, so any
 properties set on the object are accessible using `this`.
 
+### Smart arguments
+
+Only the arguments you request are passed in. The following will work:
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    styles: [
+      ['opacity', function (y) {
+        if (y > 600) {
+          return 0;
+        }
+        
+        return 1;
+      }]
+    ]
+  }
+]);
+```
+
+In addition, the function is only called when the argument has changed. If y or
+x are requested, the function will only be called when the scroll position has
+changed. If i is requested, the function will always be called irregardless of
+the other arguments.
+
+**Careful with minifiers!**
+
 ### Helper functions
 
 `transform-when` contains a couple **helper functions** to help us animate

@@ -288,4 +288,65 @@ describe('Transformer', function () {
 			}
 		}, 20);
 	});
+
+	it('should pass in requested arguments only', function (done) {
+		let lastY = -1;
+
+		transformer = new Transformer([
+			{
+				el: mock,
+				transforms: [
+					['scale', function (y) {
+						lastY = y;
+						return 1;
+					}]
+				]
+			}
+		]);
+
+		scroll(0, 14);
+
+		interval = setInterval(function () {
+			if (lastY === 14) {
+				clearInterval(interval);
+				done();
+			}
+		}, 20);
+	});
+
+	it('should not call fn if request args unchanged', function () {
+		let called = 0;
+
+		transformer = new Transformer([
+			{
+				el: mock,
+				transforms: [
+					['scale', function (y) {
+						called++;
+						return 1;
+					}]
+				]
+			}
+		]);
+
+		scroll(0, 10);
+
+		interval = setInterval(function () {
+			if (called === 1) {
+				clearInterval(interval);
+				scroll(0, 0);
+
+				interval = setInterval(function () {
+					if (called === 2) {
+						clearInterval(interval);
+
+						setTimeout(function () {
+							called.should.equal(2);
+							done();
+						}, 50);
+					}
+				}, 20);
+			}
+		}, 20);
+	});
 });

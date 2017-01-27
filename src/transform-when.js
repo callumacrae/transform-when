@@ -3,6 +3,9 @@ export default function Transformer(transforms) {
 	this.transforms = transforms;
 	this.visible = undefined;
 
+	this._lastX = -1;
+	this._lastY = -1;
+
 	this.start();
 }
 
@@ -105,7 +108,7 @@ Transformer.prototype._frame = function transformFrame() {
 			}
 		}
 
-		const args = [x, y, this.i];
+		const args = { x, y, i: this.i, lastX: this._lastX, lastY: this._lastY };
 
 		if (transform.transforms) {
 			const transforms = transform.transforms
@@ -125,6 +128,10 @@ Transformer.prototype._frame = function transformFrame() {
 			for (let [ style, fn, unit = '' ] of transform.styles) {
 				const computed = callFn('styles', style, fn, transform, unit, args);
 
+				if (computed === Transformer.UNCHANGED) {
+					continue;
+				}
+
 				each(transform.el, (el) => {
 					el.style[style] = computed;
 				});
@@ -134,15 +141,24 @@ Transformer.prototype._frame = function transformFrame() {
 		if (transform.attrs) {
 			for (let [ attr, fn, unit = '' ] of transform.attrs) {
 				const computed = callFn('attrs', attr, fn, transform, unit, args);
+
+				if (computed === Transformer.UNCHANGED) {
+					continue;
+				}
+
 				each(transform.el, (el) => el.setAttribute(attr, computed));
 			}
 		}
 	}
 
 	this.i++;
+	this._lastX = x;
+	this._lastY = y;
 
 	requestAnimationFrame(this._frame.bind(this));
 };
+
+Transformer.UNCHANGED = Symbol('unchanged');
 
 function callFn(type, name, fn, transform, unit, args) {
 	const dps = {
@@ -152,7 +168,33 @@ function callFn(type, name, fn, transform, unit, args) {
 		'styles:opacity': 2
 	};
 
-	let val = fn.apply(transform, args);
+	if (!fn.args) {
+		fn.args = fn.toString().match(/\((.*?)\)/)[1].split(',').map((str) => str.trim());
+	}
+
+	// @todo: Figure out how to do this for transforms
+	if (type !== 'transforms') {
+		let changed = false;
+
+		if (fn.args.includes('i')) {
+			changed = true;
+		}
+
+		if (fn.args.includes('x') && args.x !== args.lastX) {
+			changed = true;
+		}
+
+		if (fn.args.includes('y') && args.y !== args.lastY) {
+			changed = true;
+		}
+
+		if (!changed) {
+			return Transformer.UNCHANGED;
+		}
+	}
+
+	const argsForFn = fn.args.map((arg) => args[arg]);
+	let val = fn.apply(transform, argsForFn);
 
 	if (typeof val === 'number') {
 		const roundTo = typeof dps[type + ':' + name] === 'number' ? dps[type + ':' + name] : 3;
