@@ -5,6 +5,17 @@
 	<title>transform-when tests</title>
 
 	<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+
+	<style>
+		.scrollable-outer {
+			height: 100px;
+			overflow: scroll;
+		}
+
+		.scrollable-inner {
+			height: 500px;
+		}
+	</style>
 </head>
 <body>
 
@@ -17,6 +28,10 @@
 	<svg>
 		<path id="svg-mock"></path>
 	</svg>
+
+	<div class="scrollable-outer">
+		<div class="scrollable-inner"></div>
+	</div>
 </div>
 
 <script>

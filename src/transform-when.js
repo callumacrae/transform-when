@@ -5,19 +5,42 @@ export default function Transformer(transforms) {
 	this.transforms = transforms;
 	this.visible = undefined;
 
+	// Selector to get scroll position from
+	this.scrollElement = 'window';
+
 	this._lastX = -1;
 	this._lastY = -1;
 
 	this.start();
 }
 
+// Cache element lookups here so that we don't have to look them up at 60 fps
+const elements = {};
+
 function runFrames() {
-	const x = typeof window.scrollX === 'number' ? window.scrollX : window.pageXOffset;
-	const y = typeof window.scrollY === 'number' ? window.scrollY : window.pageYOffset;
+	const scrollPositions = {
+		window: {
+			x: typeof window.scrollX === 'number' ? window.scrollX : window.pageXOffset,
+			y: typeof window.scrollY === 'number' ? window.scrollY : window.pageYOffset,
+		},
+	};
 
 	for (let transform of transforms) {
+		if (!scrollPositions[transform.scrollElement]) {
+			if (!elements[transform.scrollElement]) {
+				elements[transform.scrollElement] = document.querySelector(transform.scrollElement);
+			}
+
+			scrollPositions[transform.scrollElement] = {
+				x: elements[transform.scrollElement].scrollLeft,
+				y: elements[transform.scrollElement].scrollTop,
+			};
+		}
+
+		const position = scrollPositions[transform.scrollElement];
+
 		try {
-			transform._frame(x, y);
+			transform._frame(position.x, position.y);
 		} catch (e) {
 			console.error(e);
 		}
