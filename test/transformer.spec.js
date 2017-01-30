@@ -316,16 +316,15 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
-	it.skip('should not call fn if request args unchanged', function (done) {
+	it('should not call fn if request args unchanged', function (done) {
 		var called = 0;
 
 		transformer = new Transformer([
 			{
 				el: mock,
-				transforms: [
-					['scale', function (y) {
+				attrs: [
+					['data-test', function (y) {
 						called++;
-						return 1;
 					}]
 				]
 			}
@@ -381,16 +380,15 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
-	it.skip('should not call fn if request args unchanged when using scroll position of other element', function (done) {
+	it('should not call fn if request args unchanged when using scroll position of other element', function (done) {
 		var called = 0;
 
 		transformer = new Transformer([
 			{
 				el: mock,
-				transforms: [
-					['scale', function (y) {
+				attrs: [
+					['data-test', function (y) {
 						called++;
-						return 1;
 					}]
 				]
 			}
