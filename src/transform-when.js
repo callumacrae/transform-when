@@ -1,4 +1,4 @@
-const frames = [];
+const transforms = [];
 
 export default function Transformer(transforms) {
 	this.i = 0;
@@ -8,8 +8,6 @@ export default function Transformer(transforms) {
 	this._lastX = -1;
 	this._lastY = -1;
 
-	this._boundFrameFn = (x, y) => this._frame(x, y);
-
 	this.start();
 }
 
@@ -17,9 +15,9 @@ function runFrames() {
 	const x = typeof window.scrollX === 'number' ? window.scrollX : window.pageXOffset;
 	const y = typeof window.scrollY === 'number' ? window.scrollY : window.pageYOffset;
 
-	for (let frame of frames) {
+	for (let transform of transforms) {
 		try {
-			frame(x, y);
+			transform._frame(x, y);
 		} catch (e) {
 			console.error(e);
 		}
@@ -31,15 +29,15 @@ requestAnimationFrame(runFrames);
 
 Transformer.prototype.stop = function stopTransforms() {
 	this.active = false;
-	if (frames.includes(this._boundFrameFn)) {
-		frames.splice(frames.indexOf(this._boundFrameFn), 1);
+	if (transforms.includes(this)) {
+		transforms.splice(transforms.indexOf(this), 1);
 	}
 };
 
 Transformer.prototype.start = function startTransforms() {
 	this.active = true;
-	if (!frames.includes(this._boundFrameFn)) {
-		frames.push(this._boundFrameFn);
+	if (!transforms.includes(this)) {
+		transforms.push(this);
 	}
 };
 
