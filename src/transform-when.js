@@ -5,14 +5,14 @@ export default function Transformer(transforms) {
 	this.transforms = transforms;
 	this.visible = undefined;
 
-	// Selector to get scroll position from
-	this.scrollElement = 'window';
-
 	this._lastX = -1;
 	this._lastY = -1;
 
 	this.start();
 }
+
+// Selector to get scroll position from. On the prototype so we can set globally
+Transformer.prototype.scrollElement = 'window';
 
 // Cache element lookups here so that we don't have to look them up at 60 fps
 const elements = {};
