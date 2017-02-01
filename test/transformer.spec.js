@@ -416,4 +416,25 @@ describe('Transformer', function () {
 			}
 		}, 20);
 	});
+
+	it('should support changing multiple css styles at once', function (done) {
+		transformer = new Transformer([
+			{
+				el: mock,
+				styles: [
+					[['clip-path', 'webkit-clip-path'], function (i) {
+						return 'circle(50px at 0% 100px)';
+					}]
+				]
+			}
+		]);
+
+		interval = setInterval(function () {
+			if (mock.style.clipPath.startsWith('circle(50px at') ||
+				(mock.style['webkit-clip-path'] && mock.style['webkit-clip-path'].startsWith('circle(50px at'))) {
+				clearInterval(interval);
+				done();
+			}
+		}, 20);
+	});
 });

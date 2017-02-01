@@ -191,6 +191,31 @@ To restore the elements to their original transforms and visiblities, call
 `.reset()` on the transformer you want to reset.
 
 
+## Needs documenting
+
+### Setting multiple properties at once:
+
+```js
+transformer = new Transformer([
+    {
+        el: mock,
+        styles: [
+            [['clip-path', 'webkit-clip-path'], function (i) {
+                return 'circle(50px at 0% 100px)';
+            }]
+        ]
+    }
+]);
+```
+
+### Changing the element to get the scroll position of
+
+
+```js
+transformer.scrollElement = '.my-scroll-element';
+```
+
+
 ## License
 
 Released under the MIT license.

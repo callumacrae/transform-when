@@ -176,7 +176,13 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 				}
 
 				each(transform.el, (el) => {
-					el.style[style] = computed;
+					if (Array.isArray(style)) {
+						style.forEach((style) => {
+							el.style[style] = computed;
+						});
+					} else {
+						el.style[style] = computed;
+					}
 				});
 			}
 		}
@@ -189,7 +195,15 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 					continue;
 				}
 
-				each(transform.el, (el) => el.setAttribute(attr, computed));
+				each(transform.el, (el) => {
+					if (Array.isArray(attr)) {
+						attr.forEach((attr) => {
+							el.setAttribute(attr, computed);
+						});
+					} else {
+						el.setAttribute(attr, computed);
+					}
+				});
 			}
 		}
 	}
@@ -238,7 +252,10 @@ function callFn(type, name, fn, transform, unit, args) {
 	let val = fn.apply(transform, argsForFn);
 
 	if (typeof val === 'number') {
-		const roundTo = typeof dps[type + ':' + name] === 'number' ? dps[type + ':' + name] : 3;
+		let roundTo = dps[type + ':' + (Array.isArray(name) ? name[0] : name)];
+		if (typeof roundTo !== 'number') {
+			roundTo = 3;
+		}
 
 		val = Math.round(val * Math.pow(10, roundTo)) / Math.pow(10, roundTo);
 	}
