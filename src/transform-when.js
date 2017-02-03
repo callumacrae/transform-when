@@ -223,7 +223,9 @@ function callFn(type, name, fn, transform, unit, args) {
 		'styles:opacity': 2
 	};
 
-	if (!fn.args) {
+	let isFirstCall = !fn.args;
+
+	if (isFirstCall) {
 		if (typeof fn === 'function') {
 			fn.args = fn.toString().match(/\((.*?)\)/)[1].split(',').map((str) => str.trim());
 		} else {
@@ -233,7 +235,7 @@ function callFn(type, name, fn, transform, unit, args) {
 
 	// @todo: Figure out how to do this for transforms
 	if (type !== 'transforms') {
-		let changed = false;
+		let changed = isFirstCall;
 
 		if (fn.args.includes('i')) {
 			changed = true;

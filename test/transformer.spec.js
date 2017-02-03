@@ -376,6 +376,35 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	it('should call fn once if no arguments', function (done) {
+		var called = 0;
+
+		transformer = new Transformer([
+			{
+				el: mock,
+				attrs: [
+					['data-test', function () {
+						called++;
+					}]
+				]
+			}
+		]);
+
+		scroll(0, 10);
+
+		interval = setInterval(function () {
+			if (called === 1) {
+				clearInterval(interval);
+				scroll(0, 0);
+
+				setTimeout(function () {
+					called.should.equal(1);
+					done();
+				}, 50);
+			}
+		}, 20);
+	});
+
 	it('should support getting the scroll position of other elements', function (done) {
 		transformer = new Transformer([
 			{
