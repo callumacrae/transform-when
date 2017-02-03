@@ -121,7 +121,25 @@ x are requested, the function will only be called when the scroll position has
 changed. If i is requested, the function will always be called irregardless of
 the other arguments.
 
-**Careful with minifiers!**
+If you're minifying your code, wrap the function in an array specifying the
+arguments you want to be passed to the function.
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    styles: [
+      ['opacity', ['y', function (y) {
+        if (y > 600) {
+          return 0;
+        }
+        
+        return 1;
+      }]]
+    ]
+  }
+]);
+```
 
 ### Helper functions
 

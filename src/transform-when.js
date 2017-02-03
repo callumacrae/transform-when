@@ -224,7 +224,11 @@ function callFn(type, name, fn, transform, unit, args) {
 	};
 
 	if (!fn.args) {
-		fn.args = fn.toString().match(/\((.*?)\)/)[1].split(',').map((str) => str.trim());
+		if (typeof fn === 'function') {
+			fn.args = fn.toString().match(/\((.*?)\)/)[1].split(',').map((str) => str.trim());
+		} else {
+			fn.args = fn.slice(0, -1);
+		}
 	}
 
 	// @todo: Figure out how to do this for transforms
@@ -249,7 +253,8 @@ function callFn(type, name, fn, transform, unit, args) {
 	}
 
 	const argsForFn = fn.args.map((arg) => args[arg]);
-	let val = fn.apply(transform, argsForFn);
+	const callableFn = typeof fn === 'function' ? fn : fn[fn.length - 1];
+	let val = callableFn.apply(transform, argsForFn);
 
 	if (typeof val === 'number') {
 		let roundTo = dps[type + ':' + (Array.isArray(name) ? name[0] : name)];

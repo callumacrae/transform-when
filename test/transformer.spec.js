@@ -316,6 +316,31 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	it('should pass in requested arguments only (minified)', function (done) {
+		var lastY = -1;
+
+		transformer = new Transformer([
+			{
+				el: mock,
+				transforms: [
+					['scale', ['y', function (a) {
+						lastY = a;
+						return 1;
+					}]]
+				]
+			}
+		]);
+
+		scroll(0, 14);
+
+		interval = setInterval(function () {
+			if (lastY === 14) {
+				clearInterval(interval);
+				done();
+			}
+		}, 20);
+	});
+
 	it('should not call fn if request args unchanged', function (done) {
 		var called = 0;
 
