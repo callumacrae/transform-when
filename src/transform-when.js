@@ -40,9 +40,20 @@ function runFrames() {
 		const position = scrollPositions[transform.scrollElement];
 
 		try {
+			transform._setup(position.x, position.y);
+		} catch(e) {
+			console.error('Problem during setup', e);
+		}
+	}
+
+	// Call frames
+	for (let transform of transforms) {
+		const position = scrollPositions[transform.scrollElement];
+
+		try {
 			transform._frame(position.x, position.y);
 		} catch (e) {
-			console.error(e);
+			console.error('Problem during frame', e);
 		}
 	}
 
@@ -106,22 +117,32 @@ Transformer.prototype.setVisible = function setGlobalVisible(visible) {
 	this.visible = visible;
 };
 
-Transformer.prototype._frame = function transformFrame(x, y) {
+/**
+ * Part one: calculate properties to change. Do not do anything to invalidate
+ * the DOM in this function.
+ *
+ * @private
+ */
+Transformer.prototype._setup = function setupFrame(x, y) {
 	if (!this.active) {
 		return;
 	}
 
 	for (let transform of this.transforms) {
-		// Has to run before visible check
-		if (transform.transforms && this.i === 0) {
-			each(transform.el, (el) => {
-				if (useTransformAttr(el)) {
-					setData(el, 'originalTransform', (el.getAttribute('transform') || '') + ' ');
-				} else {
-					const original = el.style.transform;
-					setData(el, 'originalTransform', !original || original === 'none' ? '' : `${original} `);
-				}
-			});
+		if (this.i === 0) {
+			transform._stagedData = { styles: {}, attrs: {} };
+
+			// Has to run before visible check
+			if (transform.transforms) {
+				each(transform.el, (el) => {
+					if (useTransformAttr(el)) {
+						setData(el, 'originalTransform', (el.getAttribute('transform') || '') + ' ');
+					} else {
+						const original = el.style.transform;
+						setData(el, 'originalTransform', !original || original === 'none' ? '' : `${original} `);
+					}
+				});
+			}
 		}
 
 		if (transform.visible || this.visible) {
@@ -134,29 +155,65 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 				isHidden = y < transform.visible[0] || y > transform.visible[1];
 			}
 
-			if (isHidden) {
-				each(transform.el, (el) => {
-					if (typeof getData(el, 'originalDisplay') === 'undefined') {
-						setData(el, 'originalDisplay', el.style.display || '');
-					}
-
-					el.style.display = 'none';
-				});
-
-				continue;
-			} else {
-				each(transform.el, (el) => {
-					el.style.display = getData(el, 'originalDisplay');
-				});
-			}
+			transform._stagedData.isHidden = isHidden;
+		} else {
+			transform._stagedData.isHidden = undefined;
 		}
 
 		const args = { x, y, i: this.i, lastX: this._lastX, lastY: this._lastY };
 
 		if (transform.transforms) {
-			const transforms = transform.transforms
+			transform._stagedData.transforms = transform.transforms
 				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, args)})`)
 				.join(' ');
+		}
+
+		if (transform.styles) {
+			for (let [ style, fn, unit = '' ] of transform.styles) {
+				transform._stagedData.styles[style] = callFn('styles', style, fn, transform, unit, args);
+			}
+		}
+
+		if (transform.attrs) {
+			for (let [ attr, fn, unit = '' ] of transform.attrs) {
+				transform._stagedData.attrs[attr] = callFn('attrs', attr, fn, transform, unit, args);
+			}
+		}
+	}
+};
+
+/**
+ * Part two: set changed properties on the DOM. Do not call `callFn` function
+ * here: this function could cause style to be calculated.
+ *
+ * Do nothing from here: https://gist.github.com/paulirish/5d52fb081b3570c81e3a
+ *
+ * @private
+ */
+Transformer.prototype._frame = function transformFrame(x, y) {
+	if (!this.active) {
+		return;
+	}
+
+	for (let transform of this.transforms) {
+		if (transform._stagedData.isHidden) {
+			each(transform.el, (el) => {
+				if (typeof getData(el, 'originalDisplay') === 'undefined') {
+					setData(el, 'originalDisplay', el.style.display || '');
+				}
+
+				el.style.display = 'none';
+			});
+
+			continue;
+		} else {
+			each(transform.el, (el) => {
+				el.style.display = getData(el, 'originalDisplay');
+			});
+		}
+
+		if (transform.transforms) {
+			const transforms = transform._stagedData.transforms;
 
 			each(transform.el, (el) => {
 				if (useTransformAttr(el)) {
@@ -168,8 +225,8 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 		}
 
 		if (transform.styles) {
-			for (let [ style, fn, unit = '' ] of transform.styles) {
-				const computed = callFn('styles', style, fn, transform, unit, args);
+			for (let [ style ] of transform.styles) {
+				const computed = transform._stagedData.styles[style];
 
 				if (computed === Transformer.UNCHANGED) {
 					continue;
@@ -188,8 +245,8 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 		}
 
 		if (transform.attrs) {
-			for (let [ attr, fn, unit = '' ] of transform.attrs) {
-				const computed = callFn('attrs', attr, fn, transform, unit, args);
+			for (let [ attr ] of transform.attrs) {
+				const computed = transform._stagedData.attrs[attr];
 
 				if (computed === Transformer.UNCHANGED) {
 					continue;

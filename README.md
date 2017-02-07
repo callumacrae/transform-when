@@ -233,6 +233,10 @@ transformer = new Transformer([
 transformer.scrollElement = '.my-scroll-element';
 ```
 
+### Layout thrashing prevention
+
+### General internals and how it works
+
 
 ## License
 
