@@ -168,14 +168,18 @@ describe('Transformer', function () {
 	});
 
 	it('should not call transform functions if element hidden', function (done) {
-		let called = 0;
+		var called = 0;
 
 		transformer = new Transformer([
 			{
 				el: mock,
 				visible: [0, 10],
-				styles: [['opacity', () => called++]],
-				attrs: [['opacity', () => called++]],
+				styles: [['opacity', function (i) {
+					called++;
+				}]],
+				attrs: [['opacity', function (i) {
+					called++;
+				}]],
 			}
 		]);
 
