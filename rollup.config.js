@@ -1,7 +1,7 @@
 import babel from 'rollup-plugin-babel';
 
 export default {
-	entry: 'src/transform-when.js',
+	entry: 'src/index.js',
 	dest: 'dist/transform-when.js',
 	sourceMap: true,
 	plugins: [
