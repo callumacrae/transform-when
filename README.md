@@ -141,6 +141,40 @@ const transforms = new Transformer([
 ]);
 ```
 
+
+### Actions
+
+Sometimes you want a break in the normal animation: say, if a user clicks on
+something, or if a certain position on the page is reached. transform-when has
+a concept of actions: these can be triggered, and then play for a given amount
+of time.
+
+You trigger them using the `.trigger()` method, and they're passed in using an
+`actions` argument:
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    transforms: [
+      ['rotate', function (actions) {
+        // actions === { spin: x } where x is a number between 0 and 1
+        
+        if (actions.spin) {
+          return 360 * actions.spin;
+        }
+        
+        return 0;
+      }, 'deg']
+    ]
+  }
+]);
+
+transforms.trigger('spin', 2000);
+```
+
+Multiple actions can be triggered at the same time.
+
 ### Helper functions
 
 `transform-when` contains a couple **helper functions** to help us animate

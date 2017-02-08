@@ -519,4 +519,119 @@ describe('Transformer', function () {
 			}
 		}, 20);
 	});
+
+	describe('actions and triggers', function () {
+		it('should support triggering actions', function (done) {
+			var lastActions;
+			var called = 0;
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (actions) {
+							lastActions = actions;
+							called++;
+						}]
+					]
+				}
+			]);
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					clearInterval(interval);
+
+					lastActions.should.not.have.property('test');
+
+					transformer.trigger('test', 100);
+
+					var lastVal = 0;
+
+					interval = setInterval(function () {
+						if (lastActions.test === 1) {
+							done();
+							clearInterval(interval);
+							return;
+						}
+
+						lastActions.test.should.be.a.Number();
+						lastActions.test.should.not.be.below(lastVal);
+						lastActions.test.should.be.within(0, 1);
+
+						lastVal = lastActions.test;
+					}, 20);
+				}
+			});
+		});
+
+		it('should support smart arguments and not be called when not needed', function (done) {
+			var lastActions;
+			var called = 0;
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (actions) {
+							lastActions = actions;
+							called++;
+						}]
+					]
+				}
+			]);
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					clearInterval(interval);
+
+					transformer.trigger('test', 30);
+
+					interval = setInterval(function () {
+						if (lastActions.test === 1) {
+							clearInterval(interval);
+
+							called.should.be.above(2);
+							var calledNow = called;
+
+							setTimeout(function () {
+								// Called should not have increased
+								called.should.equal(calledNow);
+								done();
+							}, 30);
+						}
+					}, 20);
+				}
+			});
+		});
+
+		it('should allow multiple actions to be called at once', function (done) {
+			var lastActions;
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (actions) {
+							lastActions = actions;
+						}]
+					]
+				}
+			]);
+
+			transformer.trigger('test', 60);
+			transformer.trigger('test2', 120);
+
+			interval = setInterval(function () {
+				lastActions.should.have.property('test2');
+
+				if (lastActions.test !== 1) {
+					lastActions.test.should.be.approximately(lastActions.test2 * 2, 0.05);
+				} else {
+					lastActions.test2.should.be.above(0.5);
+					clearInterval(interval);
+					done();
+				}
+			}, 20);
+		});
+	});
 });

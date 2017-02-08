@@ -21,6 +21,8 @@ export default function Transformer(transforms) {
 	this._lastX = -1;
 	this._lastY = -1;
 
+	this._actions = {};
+
 	this.start();
 }
 
@@ -99,6 +101,13 @@ Transformer.prototype.setVisible = function setGlobalVisible(visible) {
 	this.visible = visible;
 };
 
+Transformer.prototype.trigger = function triggerAction(name, duration) {
+	this._actions[name] = {
+		triggered: Date.now(),
+		duration
+	};
+};
+
 /**
  * The first function called on requestAnimationFrame. This one calculates the
  * properties to change and what to change them to, but doesn't apply the
@@ -114,6 +123,14 @@ Transformer.prototype.setVisible = function setGlobalVisible(visible) {
 Transformer.prototype._setup = function setupFrame(x, y) {
 	if (!this.active) {
 		return;
+	}
+
+	const actions = {};
+
+	for (const name of Object.keys(this._actions)) {
+		const action = this._actions[name];
+		const percent = 1 / action.duration * (Date.now() - action.triggered);
+		actions[name] = Math.min(percent, 1);
 	}
 
 	for (let transform of this.transforms) {
@@ -153,7 +170,7 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			transform._stagedData.isHidden = undefined;
 		}
 
-		const args = { x, y, i: this.i, lastX: this._lastX, lastY: this._lastY };
+		const args = { x, y, actions, i: this.i, lastX: this._lastX, lastY: this._lastY };
 
 		if (transform.transforms) {
 			transform._stagedData.transforms = transform.transforms
@@ -171,6 +188,13 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			for (let [ attr, fn, unit = '' ] of transform.attrs) {
 				transform._stagedData.attrs[attr] = callFn('attrs', attr, fn, transform, unit, args);
 			}
+		}
+	}
+
+	// Delete afterwards to ensure that callFn is called once when action === 1
+	for (const name of Object.keys(this._actions)) {
+		if (actions[name] === 1) {
+			delete this._actions[name];
 		}
 	}
 };
