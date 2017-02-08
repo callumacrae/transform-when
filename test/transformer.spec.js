@@ -167,6 +167,30 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	it('should not call transform functions if element hidden', function (done) {
+		let called = 0;
+
+		transformer = new Transformer([
+			{
+				el: mock,
+				visible: [0, 10],
+				styles: [['opacity', () => called++]],
+				attrs: [['opacity', () => called++]],
+			}
+		]);
+
+		scroll(0, 20);
+
+		interval = setInterval(function () {
+			if (getComputedStyle(mock).display === 'none') {
+				called.should.equal(0);
+
+				clearInterval(interval);
+				done();
+			}
+		}, 20);
+	});
+
 	it('should leave original transforms alone', function (done) {
 		transformer = new Transformer([
 			{

@@ -145,6 +145,10 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			}
 
 			transform._stagedData.isHidden = isHidden;
+
+			if (isHidden) {
+				continue;
+			}
 		} else {
 			transform._stagedData.isHidden = undefined;
 		}
