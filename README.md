@@ -175,6 +175,10 @@ transforms.trigger('spin', 2000);
 
 Multiple actions can be triggered at the same time.
 
+The `.trigger()` function returns a promise which resolves when the action
+completes. It uses native promises, and will return `undefined` when
+`window.Promise` is undefined.
+
 ### Helper functions
 
 `transform-when` contains a couple **helper functions** to help us animate

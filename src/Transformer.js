@@ -102,10 +102,21 @@ Transformer.prototype.setVisible = function setGlobalVisible(visible) {
 };
 
 Transformer.prototype.trigger = function triggerAction(name, duration) {
+	let resolveFn;
+	let promise;
+	if (typeof window.Promise === 'function') {
+		promise = new Promise((resolve) => {
+			resolveFn = resolve;
+		});
+	}
+
 	this._actions[name] = {
 		triggered: Date.now(),
+		resolveFn,
 		duration
 	};
+
+	return promise;
 };
 
 /**
@@ -194,6 +205,10 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 	// Delete afterwards to ensure that callFn is called once when action === 1
 	for (const name of Object.keys(this._actions)) {
 		if (actions[name] === 1) {
+			if (this._actions[name].resolveFn) {
+				this._actions[name].resolveFn();
+			}
+
 			delete this._actions[name];
 		}
 	}

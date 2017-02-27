@@ -624,14 +624,41 @@ describe('Transformer', function () {
 			interval = setInterval(function () {
 				lastActions.should.have.property('test2');
 
-				if (lastActions.test !== 1) {
+				if (lastActions.test < 1) {
 					lastActions.test.should.be.approximately(lastActions.test2 * 2, 0.05);
 				} else {
-					lastActions.test2.should.be.above(0.5);
+					lastActions.test2.should.be.above(0.4999);
 					clearInterval(interval);
 					done();
 				}
 			}, 20);
+		});
+
+		it('should return a promise that resolves when action complete', function () {
+			transformer = new Transformer([]);
+
+			const start = Date.now();
+
+			return transformer.trigger('test', 60)
+				.then(function () {
+					(Date.now() - start).should.be.approximately(60, 30);
+				});
+		});
+
+		it('should return nothing if window.Promise undefined', function () {
+			const Promise = window.Promise;
+			window.Promise = undefined;
+
+			// This so that if the test fails, it doesn't break anything else
+			setTimeout(function () {
+				window.Promise = Promise;
+			});
+
+			transformer = new Transformer([]);
+
+			Should(transformer.trigger('test', 60)).equal(undefined);
+
+			window.Promise = Promise;
 		});
 	});
 });
