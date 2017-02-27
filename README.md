@@ -271,6 +271,8 @@ transformer = new Transformer([
 transformer.scrollElement = '.my-scroll-element';
 ```
 
+### loopBy and easing
+
 ### Layout thrashing prevention
 
 ### General internals and how it works

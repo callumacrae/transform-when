@@ -23,12 +23,23 @@ export function transform(domain, range, val, fixed) {
 	return (range[1] - range[0]) * normalised + range[0];
 }
 
-// Easings that can be used by transdformObj. Each function should take a
+// Easings that can be used by transformObj. Each function should take a
 // number between 0 and 1 (a percentage) and return a different number between
 // 0 and 1. Feel free to send PRs.
 export const easings = {
 	linear: (x) => x,
-	jump: (x) => x < 0.5 ? 2 * x * (1 - x) : 2 * Math.pow(x, 2) - 2 * x + 1
+	easeInQuad: (x) => Math.pow(x, 2),
+	easeOutQuad: (x) => 1 - Math.pow(1 - x, 2),
+	easeInOutQuad: (x) => (x) => x < 0.5 ? Math.pow(x * 2, 2) / 2 : 1 - Math.pow(2 * (1 - x), 2) / 2,
+	easeInCubic: (x) => Math.pow(x, 3),
+	easeOutCubic: (x) => 1 - Math.pow(1 - x, 3),
+	easeInOutCubic: (x) => (x) => x < 0.5 ? Math.pow(x * 2, 3) / 2 : 1 - Math.pow(2 * (1 - x), 3) / 2,
+	easeInQuart: (x) => Math.pow(x, 4),
+	easeOutQuart: (x) => 1 - Math.pow(1 - x, 4),
+	easeInOutQuart: (x) => (x) => x < 0.5 ? Math.pow(x * 2, 4) / 2 : 1 - Math.pow(2 * (1 - x), 4) / 2,
+	easeInQuint: (x) => Math.pow(x, 5),
+	easeOutQuint: (x) => 1 - Math.pow(1 - x, 5),
+	easeInOutQuint: (x) => (x) => x < 0.5 ? Math.pow(x * 2, 5) / 2 : 1 - Math.pow(2 * (1 - x), 5) / 2,
 };
 
 /**
