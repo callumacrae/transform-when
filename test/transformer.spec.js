@@ -4,9 +4,16 @@ var mocks = document.querySelectorAll('.mock');
 var svgMock = document.querySelector('#svg-mock');
 var scrollableEl = document.querySelector('.scrollable-outer');
 
+function afterNextFrame(fn) {
+	requestAnimationFrame(function () {
+		setTimeout(fn);
+	});
+}
+
 describe('Transformer', function () {
 	var interval;
 	var transformer;
+	var transformer2;
 
 	beforeEach(function () {
 		mock.removeAttribute('transform');
@@ -20,6 +27,9 @@ describe('Transformer', function () {
 		clearInterval(interval);
 		if (transformer) {
 			transformer.reset();
+		}
+		if (transformer2) {
+			transformer2.reset();
 		}
 	});
 
@@ -632,6 +642,48 @@ describe('Transformer', function () {
 					done();
 				}
 			}, 20);
+		});
+
+		it('shouldn\'t fist fite if multiple actions on multiple transformers called', function (done) {
+			transformer = new Transformer([
+				{
+					el: mock,
+					transforms: [
+						['scale', function (actions) {
+							return actions.test ? 0.5 : 0;
+						}]
+					]
+				}
+			]);
+
+			transformer2 = new Transformer([
+				{
+					el: mock,
+					transforms: [
+						['scale', function (actions) {
+							return actions.test ? 0.6 : 0;
+						}]
+					]
+				}
+			]);
+
+			afterNextFrame(function () {
+				transformer.trigger('test', 60);
+
+				setTimeout(function () {
+					mock.style.transform.should.equal('scale(0.5)');
+
+					afterNextFrame(function () {
+						transformer2.trigger('test', 60);
+
+						setTimeout(function () {
+							mock.style.transform.should.equal('scale(0.6)');
+
+							done();
+						}, 50);
+					});
+				}, 50);
+			});
 		});
 
 		it('should return a promise that resolves when action complete', function () {
