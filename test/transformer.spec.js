@@ -686,6 +686,48 @@ describe('Transformer', function () {
 			});
 		});
 
+		it('shouldn\'t fist fite if multiple actions on multiple transformers called (and they change)', function (done) {
+			transformer = new Transformer([
+				{
+					el: mock,
+					transforms: [
+						['scale', function (actions) {
+							return 0.5 + Math.random() / 100;
+						}]
+					]
+				}
+			]);
+
+			transformer2 = new Transformer([
+				{
+					el: mock,
+					transforms: [
+						['scale', function (actions) {
+							return 0.6 + Math.random() / 100;
+						}]
+					]
+				}
+			]);
+
+			afterNextFrame(function () {
+				transformer.trigger('test', 60);
+
+				setTimeout(function () {
+					mock.style.transform.should.startWith('scale(0.5');
+
+					afterNextFrame(function () {
+						transformer2.trigger('test', 60);
+
+						setTimeout(function () {
+							mock.style.transform.should.startWith('scale(0.6');
+
+							done();
+						}, 50);
+					});
+				}, 50);
+			});
+		});
+
 		it('should return a promise that resolves when action complete', function () {
 			transformer = new Transformer([]);
 
@@ -794,6 +836,41 @@ describe('Transformer', function () {
 				if (called > 1) {
 					transformPart._stagedData.attrs['data-test'].should.have.type('symbol');
 					clearInterval(interval);
+					done();
+				}
+			}, 5);
+		});
+
+		it('should handle partial transform UNCHANGEDs', function (done) {
+			let called = 0;
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					transforms: [
+						['scale', function (actions) {
+							return 2;
+						}],
+						['translate', function (i) {
+							called++;
+							return i;
+						}, 'px']
+					]
+				}
+			]);
+
+			let startTransform;
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					startTransform = mock.style.transform;
+					startTransform.should.equal('scale(2) translate(0px)');
+				}
+
+				if (called > 1) {
+					clearInterval(interval);
+					mock.style.transform.should.startWith('scale(2) translate(');
+					mock.style.transform.should.not.equal(startTransform);
 					done();
 				}
 			}, 5);

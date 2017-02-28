@@ -190,15 +190,21 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			let transforms = transform.transforms
 				.map(([ prop, fn, unit = '' ]) => [prop, callFn('transforms', prop, fn, transform, unit, args)]);
 
-			let changed = true;
+			let changed = transforms.some((transform) => transform[1] !== UNCHANGED);
 
-			if (transform._lastData.transforms) {
-				changed = transforms.some(([, newVal], i) => {
-					return newVal !== transform._lastData.transforms[i][1];
+			if (changed && transform._lastData.transforms) {
+				changed = transforms.some((innerTransform, i) => {
+					return innerTransform[1] !== transform._lastData.transforms[i][1];
 				});
 			}
 
-			if (!changed) {
+			if (changed) {
+				transforms.forEach((innerTransform, i) => {
+					if (innerTransform[1] === UNCHANGED) {
+						innerTransform[1] = transform._lastData.transforms[i][1];
+					}
+				});
+			} else {
 				transforms = UNCHANGED;
 			}
 

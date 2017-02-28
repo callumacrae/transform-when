@@ -28,32 +28,29 @@ export default function callFn(type, name, fn, transform, unit, args) {
 		}
 	}
 
-	// @todo: Figure out how to do this for transforms
-	if (type !== 'transforms') {
-		let changed = isFirstCall;
+	let changed = isFirstCall;
 
-		if (fn.args.includes('i')) {
-			changed = true;
-		}
+	if (fn.args.includes('i')) {
+		changed = true;
+	}
 
-		if (fn.args.includes('actions') && Object.keys(args.actions).length) {
-			changed = true;
-		}
+	if (fn.args.includes('actions') && Object.keys(args.actions).length) {
+		changed = true;
+	}
 
-		if (fn.args.includes('x') && args.x !== args.lastX) {
-			changed = true;
-		}
+	if (fn.args.includes('x') && args.x !== args.lastX) {
+		changed = true;
+	}
 
-		if (fn.args.includes('y') && args.y !== args.lastY) {
-			changed = true;
-		}
+	if (fn.args.includes('y') && args.y !== args.lastY) {
+		changed = true;
+	}
 
-		// If the arguments haven't changed, don't call the function because the
-		// value won't have changed. This assumes that functions are pure: request
-		// the `i` argument if it isn't.
-		if (!changed) {
-			return UNCHANGED;
-		}
+	// If the arguments haven't changed, don't call the function because the
+	// value won't have changed. This assumes that functions are pure: request
+	// the `i` argument if it isn't.
+	if (!changed) {
+		return UNCHANGED;
 	}
 
 	const argsForFn = fn.args.map((arg) => args[arg]);
