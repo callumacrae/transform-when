@@ -749,7 +749,7 @@ describe('Transformer', function () {
 		it('should return a promise that resolves when action complete', function () {
 			transformer = new Transformer([]);
 
-			const start = Date.now();
+			var start = Date.now();
 
 			return transformer.trigger('test', 60)
 				.then(function () {
@@ -758,7 +758,7 @@ describe('Transformer', function () {
 		});
 
 		it('should return nothing if window.Promise undefined', function () {
-			const Promise = window.Promise;
+			var Promise = window.Promise;
 			window.Promise = undefined;
 
 			// This so that if the test fails, it doesn't break anything else
@@ -776,9 +776,9 @@ describe('Transformer', function () {
 
 	describe('change detection', function () {
 		it('should not write transform changes to DOM if transforms haven\'t changed', function (done) {
-			let called = 0;
+			var called = 0;
 
-			const transformPart = {
+			var transformPart = {
 				el: mock,
 				transforms: [
 					['scale', function (i) {
@@ -796,7 +796,8 @@ describe('Transformer', function () {
 				}
 
 				if (called > 1) {
-					transformPart._stagedData.transforms.should.have.type('symbol');
+					// These need to be startsWith or phantomjs will fail
+					transformPart._stagedData.transforms.toString().should.startWith('Symbol(unchanged)');
 					clearInterval(interval);
 					done();
 				}
@@ -804,9 +805,9 @@ describe('Transformer', function () {
 		});
 
 		it('should not write style changes to DOM if style hasn\'t changed', function (done) {
-			let called = 0;
+			var called = 0;
 
-			const transformPart = {
+			var transformPart = {
 				el: mock,
 				styles: [
 					['opacity', function (i) {
@@ -824,7 +825,7 @@ describe('Transformer', function () {
 				}
 
 				if (called > 1) {
-					transformPart._stagedData.styles.opacity.should.have.type('symbol');
+					transformPart._stagedData.styles.opacity.toString().should.startWith('Symbol(unchanged)');
 					clearInterval(interval);
 					done();
 				}
@@ -832,9 +833,9 @@ describe('Transformer', function () {
 		});
 
 		it('should not write attr changes to DOM if they haven\'t changed', function (done) {
-			let called = 0;
+			var called = 0;
 
-			const transformPart = {
+			var transformPart = {
 				el: mock,
 				attrs: [
 					['data-test', function (i) {
@@ -852,7 +853,7 @@ describe('Transformer', function () {
 				}
 
 				if (called > 1) {
-					transformPart._stagedData.attrs['data-test'].should.have.type('symbol');
+					transformPart._stagedData.attrs['data-test'].toString().should.startWith('Symbol(unchanged)');
 					clearInterval(interval);
 					done();
 				}
@@ -860,7 +861,7 @@ describe('Transformer', function () {
 		});
 
 		it('should handle partial transform UNCHANGEDs', function (done) {
-			let called = 0;
+			var called = 0;
 
 			transformer = new Transformer([
 				{
@@ -877,7 +878,7 @@ describe('Transformer', function () {
 				}
 			]);
 
-			let startTransform;
+			var startTransform;
 
 			interval = setInterval(function () {
 				if (called === 1) {
