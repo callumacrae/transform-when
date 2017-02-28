@@ -732,7 +732,7 @@ describe('Transformer', function () {
 
 			interval = setInterval(function () {
 				if (called === 1) {
-					transformPart._stagedData.transforms.should.equal('scale(1)');
+					transformPart._stagedData.transforms.should.deepEqual([['scale', '1']]);
 				}
 
 				if (called > 1) {

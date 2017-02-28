@@ -188,10 +188,17 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 
 		if (transform.transforms) {
 			let transforms = transform.transforms
-				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, args)})`)
-				.join(' ');
+				.map(([ prop, fn, unit = '' ]) => [prop, callFn('transforms', prop, fn, transform, unit, args)]);
 
-			if (transforms === transform._lastData.transforms) {
+			let changed = true;
+
+			if (transform._lastData.transforms) {
+				changed = transforms.some(([, newVal], i) => {
+					return newVal !== transform._lastData.transforms[i][1];
+				});
+			}
+
+			if (!changed) {
 				transforms = UNCHANGED;
 			}
 
@@ -280,9 +287,11 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 		}
 
 		if (transform.transforms) {
-			const transforms = transform._stagedData.transforms;
+			let transforms = transform._stagedData.transforms;
 
 			if (transforms !== UNCHANGED) {
+				transforms = transforms.map(([ key, value ]) => `${key}(${value})`).join(' ');
+
 				each(transform.el, (el) => {
 					if (useTransformAttr(el)) {
 						el.setAttribute('transform', getData(el, 'originalTransform') + transforms);
