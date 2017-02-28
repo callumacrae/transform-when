@@ -661,4 +661,90 @@ describe('Transformer', function () {
 			window.Promise = Promise;
 		});
 	});
+
+	describe('change detection', function () {
+		it('should not write transform changes to DOM if transforms haven\'t changed', function (done) {
+			let called = 0;
+
+			const transformPart = {
+				el: mock,
+				transforms: [
+					['scale', function (i) {
+						called++;
+						return 1;
+					}]
+				]
+			};
+
+			transformer = new Transformer([ transformPart ]);
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					transformPart._stagedData.transforms.should.equal('scale(1)');
+				}
+
+				if (called > 1) {
+					transformPart._stagedData.transforms.should.have.type('symbol');
+					clearInterval(interval);
+					done();
+				}
+			}, 5);
+		});
+
+		it('should not write style changes to DOM if style hasn\'t changed', function (done) {
+			let called = 0;
+
+			const transformPart = {
+				el: mock,
+				styles: [
+					['opacity', function (i) {
+						called++;
+						return 1;
+					}]
+				]
+			};
+
+			transformer = new Transformer([ transformPart ]);
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					transformPart._stagedData.styles.opacity.should.equal('1');
+				}
+
+				if (called > 1) {
+					transformPart._stagedData.styles.opacity.should.have.type('symbol');
+					clearInterval(interval);
+					done();
+				}
+			}, 5);
+		});
+
+		it('should not write attr changes to DOM if they haven\'t changed', function (done) {
+			let called = 0;
+
+			const transformPart = {
+				el: mock,
+				attrs: [
+					['data-test', function (i) {
+						called++;
+						return 'foo';
+					}]
+				]
+			};
+
+			transformer = new Transformer([ transformPart ]);
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					transformPart._stagedData.attrs['data-test'].should.equal('foo');
+				}
+
+				if (called > 1) {
+					transformPart._stagedData.attrs['data-test'].should.have.type('symbol');
+					clearInterval(interval);
+					done();
+				}
+			}, 5);
+		});
+	});
 });

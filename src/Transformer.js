@@ -149,6 +149,9 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			// This is where data to be put into the DOM is stored until ._frame()
 			transform._stagedData = { styles: {}, attrs: {} };
 
+			// This is where data from the last run is kept so it can be compared for changes
+			transform._lastData = { styles: {}, attrs: {} };
+
 			// Has to run before visible check
 			if (transform.transforms) {
 				each(transform.el, (el) => {
@@ -184,20 +187,50 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 		const args = { x, y, actions, i: this.i, lastX: this._lastX, lastY: this._lastY };
 
 		if (transform.transforms) {
-			transform._stagedData.transforms = transform.transforms
+			let transforms = transform.transforms
 				.map(([ prop, fn, unit = '' ]) => `${prop}(${callFn('transforms', prop, fn, transform, unit, args)})`)
 				.join(' ');
+
+			if (transforms === transform._lastData.transforms) {
+				transforms = UNCHANGED;
+			}
+
+			transform._stagedData.transforms = transforms;
+
+			if (transforms !== UNCHANGED) {
+				transform._lastData.transforms = transforms;
+			}
 		}
 
 		if (transform.styles) {
 			for (let [ style, fn, unit = '' ] of transform.styles) {
-				transform._stagedData.styles[style] = callFn('styles', style, fn, transform, unit, args);
+				let value = callFn('styles', style, fn, transform, unit, args);
+
+				if (value === transform._lastData.styles[style]) {
+					value = UNCHANGED;
+				}
+
+				transform._stagedData.styles[style] = value;
+
+				if (value !== UNCHANGED) {
+					transform._lastData.styles[style] = value;
+				}
 			}
 		}
 
 		if (transform.attrs) {
 			for (let [ attr, fn, unit = '' ] of transform.attrs) {
-				transform._stagedData.attrs[attr] = callFn('attrs', attr, fn, transform, unit, args);
+				let value = callFn('attrs', attr, fn, transform, unit, args);
+
+				if (value === transform._lastData.attrs[attr]) {
+					value = UNCHANGED;
+				}
+
+				transform._stagedData.attrs[attr] = value;
+
+				if (value !== UNCHANGED) {
+					transform._lastData.attrs[attr] = value;
+				}
 			}
 		}
 	}
@@ -249,13 +282,15 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 		if (transform.transforms) {
 			const transforms = transform._stagedData.transforms;
 
-			each(transform.el, (el) => {
-				if (useTransformAttr(el)) {
-					el.setAttribute('transform', getData(el, 'originalTransform') + transforms);
-				} else {
-					el.style.transform = getData(el, 'originalTransform') + transforms;
-				}
-			});
+			if (transforms !== UNCHANGED) {
+				each(transform.el, (el) => {
+					if (useTransformAttr(el)) {
+						el.setAttribute('transform', getData(el, 'originalTransform') + transforms);
+					} else {
+						el.style.transform = getData(el, 'originalTransform') + transforms;
+					}
+				});
+			}
 		}
 
 		if (transform.styles) {
