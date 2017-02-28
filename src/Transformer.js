@@ -184,7 +184,7 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			transform._stagedData.isHidden = undefined;
 		}
 
-		const args = { x, y, actions, i: this.i, lastX: this._lastX, lastY: this._lastY };
+		const args = { x, y, actions, actionEnded: this._actionEnded, i: this.i, lastX: this._lastX, lastY: this._lastY };
 
 		if (transform.transforms) {
 			let transforms = transform.transforms
@@ -248,12 +248,18 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 		}
 	}
 
+	if (this._actionEnded) {
+		this._actionEnded = false;
+	}
+
 	// Delete afterwards to ensure that callFn is called once when action === 1
 	for (const name of Object.keys(this._actions)) {
 		if (actions[name] === 1) {
 			if (this._actions[name].resolveFn) {
 				this._actions[name].resolveFn();
 			}
+
+			this._actionEnded = true;
 
 			delete this._actions[name];
 		}

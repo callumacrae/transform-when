@@ -576,7 +576,7 @@ describe('Transformer', function () {
 					var lastVal = 0;
 
 					interval = setInterval(function () {
-						if (lastActions.test === 1) {
+						if (lastActions.test === undefined) {
 							done();
 							clearInterval(interval);
 							return;
@@ -587,9 +587,9 @@ describe('Transformer', function () {
 						lastActions.test.should.be.within(0, 1);
 
 						lastVal = lastActions.test;
-					}, 20);
+					}, 5);
 				}
-			});
+			}, 5);
 		});
 
 		it('should support smart arguments and not be called when not needed', function (done) {
@@ -622,14 +622,14 @@ describe('Transformer', function () {
 							var calledNow = called;
 
 							setTimeout(function () {
-								// Called should not have increased
-								called.should.equal(calledNow);
+								// Called should have increased by only one
+								called.should.equal(calledNow + 1);
 								done();
 							}, 30);
 						}
-					}, 20);
+					}, 5);
 				}
-			});
+			}, 1);
 		});
 
 		it('should allow multiple actions to be called at once', function (done) {
@@ -771,6 +771,30 @@ describe('Transformer', function () {
 			Should(transformer.trigger('test', 60)).equal(undefined);
 
 			window.Promise = Promise;
+		});
+
+		it('should call action functions once more after action has finished', function (done) {
+			const actionVals = [];
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (actions) {
+							actionVals.push(actions.test);
+						}]
+					]
+				}
+			]);
+
+			transformer.trigger('test', 40);
+
+			setTimeout(function () {
+				actionVals[0].should.be.within(0, 1);
+				actionVals[actionVals.length - 2].should.be.within(0, 1);
+				Should(actionVals[actionVals.length - 1]).equal(undefined);
+				done();
+			}, 80);
 		});
 	});
 

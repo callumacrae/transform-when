@@ -34,7 +34,7 @@ export default function callFn(type, name, fn, transform, unit, args) {
 		changed = true;
 	}
 
-	if (fn.args.includes('actions') && Object.keys(args.actions).length) {
+	if (fn.args.includes('actions') && (Object.keys(args.actions).length || args.actionEnded)) {
 		changed = true;
 	}
 
