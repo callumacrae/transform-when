@@ -15,7 +15,7 @@ export const transformers = [];
  */
 export default function Transformer(transforms) {
 	this.i = 0;
-	this.transforms = transforms;
+	this.transforms = Array.isArray(transforms) ? transforms : [transforms];
 	this.visible = undefined;
 
 	this._lastX = -1;

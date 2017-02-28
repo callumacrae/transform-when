@@ -100,6 +100,24 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	it('should accept just one object as well as an array', function (done) {
+		transformer = new Transformer({
+			el: mock,
+			transforms: [
+				['scale', function (x, y, i) {
+					return (i < 3) ? 1 : 2;
+				}]
+			]
+		});
+
+		interval = setInterval(function () {
+			if (mock.style.transform === 'scale(1)') {
+				clearInterval(interval);
+				done();
+			}
+		}, 20);
+	});
+
 	it('should support visible property', function (done) {
 		transformer = new Transformer([
 			{
