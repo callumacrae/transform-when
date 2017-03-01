@@ -12,95 +12,33 @@
 $ npm install --save transform-when
 ```
 
+## Features
+
+- Blurs the line the between **reactive and time-based animations**, allowing
+you to combine variables such as page position, time, and user actions.
+- Uses a number of techniques to ensure **extremely high performance**: both on 
+desktop and on mobile.
+  - Uses **pure functions** to intelligently know when a property is going to
+  change without having to call the transform function first.
+  - Calculates every value to set, and then sets them all in one go, effectively
+  making **layout thrashing impossible**.
+  - Stores property values and compares changes against the old values to
+  ensure that it actually is a change before setting it: sort of like a virtual
+  DOM, but without a virtual DOM.
+  - Uses `requestAnimationFrame` to ensure that it is only ran when necessary.
+- It is **powerful**. You can make complicated animations with this library.
+- Because it is low-level and doesn't contain any knowledge of the stuff it is
+animating (that bit is left up to you), it's extremely lightweight: minified
+and gzipped, the whole library is **under 10KB**
+- Works with both HTML elements and SVG elements.
+- Tested in IE11+.
+
 ## Usage
 
 ```js
 const Transformer = require('transform-when');
 
-const transforms = new Transformer([
-  {
-    el: document.querySelector('.my-element'),
-    visible: [0, 600],
-    transform: [
-      ['scale', (x, y, i) => Transformer.transform([400, 600], [1, 0.5], y)]
-    ],
-    opacityTransform: Transformer.transformObject({
-      0: 0.5,
-      100: 1,
-      400: 1,
-      600: 0
-    }),
-    styles: [
-      ['opacity', function (x, y, i) {
-        return this.opacityTransform(y);
-      }]
-    ],
-    attrs: []
-  },
-  {
-    el: document.querySelector('.my-other-element'),
-    // ...
-  }
-]);
-
-button.addEventListener('click', function () {
-  transforms.stop();
-});
-```
-
-A _lot_ happened in that code sample, so let's break it down a bit:
-
-The `Transformer` constructor function takes an array of **transforms**. Each
-transform corresponds to one element, and allows you to change any property
-about that element: CSS properties with `styles`, attributes with `attrs`,
-and a helpful shortcut for the `transform` attribute which allows you to break
-it into parts.
-
-You should try to only modify the opacity and transforms, as they're cheap to
-animate: anything else could reduce the frame rate of your application.
-
-The below code changes the opacity from 1 to 0 when the y position of the page
-gets below 600:
-
-```js
-const transforms = new Transformer([
-  {
-    el: document.querySelector('.my-element'),
-    styles: [
-      ['opacity', function (x, y, i) {
-        if (y > 600) {
-          return 0;
-        }
-        
-        return 1;
-      }]
-    ]
-  }
-]);
-```
-
-The three arguments provided to the function are `x`, `y` and `i`: the distance
-scrolled horizontally on the page (the `x` value), the distance scrolled
-vertically (`y`), and the number of times the function has been called (`i`),
-which can be very useful for running animations through time: it's called about
-60 times per second in a performant page.
-
-The `visible` property is optional, but will improve performance on pages with
-lots of elements and transforms: it tests whether the vertical scroll value of
-the page is between the two numbers, and if it isn't, it sets `display: none`
-and doesn't attempt to calculate the properties. You can also use the
-`transforms.setVisible()` method to set the `visible` property on all items
-of the transform at once.
-
-The `this` value in transform functions is set to the transform itself, so any
-properties set on the object are accessible using `this`.
-
-### Smart arguments
-
-Only the arguments you request are passed in. The following will work:
-
-```js
-const transforms = new Transformer([
+new Transformer([
   {
     el: document.querySelector('.my-element'),
     styles: [
@@ -116,33 +54,93 @@ const transforms = new Transformer([
 ]);
 ```
 
-In addition, the function is only called when the argument has changed. If y or
-x are requested, the function will only be called when the scroll position has
-changed. If i is requested, the function will always be called irregardless of
-the other arguments.
+The above code sets up a fairly simple transformer: it sets the opacity of the
+element to 0 if `window.scrollY` reaches more than 600, and back to 1 if the
+user scrolls back up above 600px again.
 
-If you're minifying your code, wrap the function in an array specifying the
-arguments you want to be passed to the function.
+In addition to **styles**, transform-when can animate **attrs**, and
+**transforms**. transforms is a helper function, and will set the `transform`
+style on HTML elements and the `transform` property on SVG elements.
+
+Let's take a look at a longer example that uses all three:
 
 ```js
+const Transformer = require('transform-when');
+
 const transforms = new Transformer([
   {
     el: document.querySelector('.my-element'),
     styles: [
-      ['opacity', ['y', function (y) {
-        if (y > 600) {
-          return 0;
-        }
-        
-        return 1;
-      }]]
+      ['opacity', function (y) {
+        // This function animates the opacity from 1 to 0 between 500px and 600px:
+        // we'll explore it some more later.
+        return Transformer.transform([500, 600], [1, 0], y);
+      }]
+    ],
+    attrs: [
+      ['class', function (y) {
+        return 'my-element' + (y > 500 && y < 600 ? ' animating' : '');
+      }]
+    ],
+    transforms: [
+      ['scale', function (y) {
+        return Transformer.transform([500, 600], [1, 0.5], y);
+      }]
     ]
   }
 ]);
 ```
 
+That code would take the element (or elements) matching `.my-element`, and then
+when the user scrolls between 500px and 600px, it would animate the opacity 
+from 1 to 0, animate the scale from 1 to 0.5, and apply the `animating` class.
 
-### Actions
+### Terminology
+
+- The `Transformer` function takes either a **transform object** or an array of
+them.
+- Each transform object should have an `el` property containing an element (or
+NodeList) and some **properties** to animate: styles, attrs, and transforms.
+- Properties use **transform functions** to calculate what values should be
+changed. Transform functions should be pure functions (without side effects),
+and request only the arguments requested so they can be heavily optimised.
+
+That's it.
+
+### Transform function arguments (smart arguments)
+
+The transform functions above only have one argument, `y`, but if you were to
+change that to `x` or `i`, you would get a different number. This is because
+transform-when uses the arguments to detect when a property needs to be changed
+before actually calling the transform function: if the only argument is `y` and
+the y position of the page hasn't changed since the function was last called,
+then it doesn't bother to call the transform function.
+
+This is what makes transform-when so performant - but it means that transform
+functions should be pure as much as possible (if you want something to be
+random, don't worry - read the section on `i` below).
+
+There are (currently) four different arguments you can request: `y`, `x`, `i`
+and `actions`.
+
+#### Scroll position (`x` and `y`)
+
+The `x` and `y` values are simply `window.scrollX` and `window.scrollY` (or the
+IE equivalents)—how far down or along the page the user has scrolled.
+
+#### Time (`i`)
+
+`i` starts at 0, and increases by 1 for each frame—effectively, it's the frame
+number. This is useful for animating by time.
+
+If you want the actual time or a duration, you can calculate that yourself
+using `Date.now()`.
+
+If you want an impure transform function—say, you want to change it a bit
+randomly—request the `i` argument and the transform function will be called
+every time.
+
+#### User actions (`actions`)
 
 Sometimes you want a break in the normal animation: say, if a user clicks on
 something, or if a certain position on the page is reached. transform-when has
@@ -179,14 +177,171 @@ The `.trigger()` function returns a promise which resolves when the action
 completes. It uses native promises, and will return `undefined` when
 `window.Promise` is undefined.
 
-### Helper functions
+#### Minifiers
 
-`transform-when` contains a couple **helper functions** to help us animate
-values between each other:
+Minifiers will, by default, break transform-when if they rename variables. The
+way around this is to wrap the function in an array saying what variables you
+need:
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    transforms: [
+      ['rotate', ['actions', function (actions) {
+        if (actions.spin) {
+          return 360 * actions.spin;
+        }
+        
+        return 0;
+      }], 'deg']
+    ]
+  }
+]);
+```
+
+The minifier won't touch the string, and transform-when will look at that
+instead.
+
+### `this`
+
+In a transform function, `this` refers to the transform object. This allows
+you to store stuff like scales on the transform object:
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    colorScale: chroma.scale(['red', 'blue']).domain([500, 600]),
+    styles: [
+      ['color', function (y) {
+        return this.colorScale(y);
+      }]
+    ]
+  }
+]);
+```
+
+### Types of properties
+
+There are three types of properties, `styles`, `attrs` and `transforms`. The
+first two are both pretty simple: they just set styles and attributes of an
+element. Be careful animating attributes and styles that aren't the opacity:
+they are more expensive to animate than transforms and opacity, and might make
+your animation jerky.
+
+Each takes an array of three things: the property (style or attribute) to
+animate, the transform functions, and optionally the unit to use - it's better
+to let transform-when handle adding the unit, because it will also round the
+number for you.
+
+Let's take a look at an example:
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    styles: [
+      ['padding', function (y) {
+        return Transformer.transform([500, 600], [20, 50], y);
+      }, 'px']
+    ],
+    attrs: [
+      ['class', function (y) {
+        return 'my-element' + (y > 500 && y < 600 ? ' animating' : '');
+      }]
+    ],
+  }
+]);
+```
+
+That animates the padding of an element from 20px to 50px, and adds the
+`animating` class.
+
+Transforms are a little trickier.
+
+#### Animating transforms
+
+CSS or SVG transforms are all set on one property. For example, a CSS transform
+could be `scaleY(0.5) translate(10px 20px)` and an SVG transform could be
+`scale(1 0.5) translate(10 20)`. Transforms are the reason for the slightly
+strange syntax using arrays for properties, not objects: order is important.
+Translating an element then scaling it is pretty different to scaling it and
+then translating it.
+
+transform-when looks at the array, turning each property into part of the
+transform attribute (for SVG) or style (for HTML elements).
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    transforms: [
+      ['scale', function (y) {
+        return Transformer.transform([500, 600], [1, 1.5], y);
+      }],
+      ['translateX', function (y) {
+        return Transformer.transform([500, 600], [0, 50], y);
+      }, 'px']
+    ]
+  }
+]);
+```
+
+That would return `scale(1) translateX(0px)` when the y position of the page is
+500px, `scale(1.5) translateX(50px)` when the y position of the page is 600px,
+and transition between the two.
+
+Because the library doesn't have any knowledge of the properties it is
+animating, remember to specify units when required for CSS transforms, and
+don't try to use `scaleY` on an SVG!
+
+#### Animating multiple properties at once
+
+Sometimes it's necessary to animate multiple properties at the same time with
+the same value—for example, for CSS vendor prefixes. It isn't necessary to
+specify two different properties with the same transform functions (and it
+would be pretty inefficient, too): you can just specify the property as an
+array:
+
+```js
+const transformer = new Transformer([
+  {
+    el: mock,
+    styles: [
+      [['clip-path', 'webkit-clip-path'], function (i) {
+        return 'circle(50px at 0% 100px)';
+      }]
+    ]
+  }
+]);
+```
+
+### Transform helpers
+
+transform-when provides a couple functions to help with animating values
+between two different points: `Transformer.transform()`, and
+`Transformer.transformObj()`. If you're familiar with d3,
+`Transformer.transform()` work pretty similar to d3's scale functions.
+
+Both functions map a domain to a range: for example, if you want to animate
+the scale of an element from 1 to 2 between the y positions of 500px and 600px,
+you could do it like this:
+
+```js
+const scale = (x) => (2 - 1) * (y - 500) / (600 - 500) + 1;
+```
+
+That gets complicated. Instead, you can use one of the helpers:
+
+```js
+Transformer.transform([500, 600], [1, 2], y);
+```
 
 #### `Transformer.transform()`
 
-A simple scale function with three arguments, domain, range, and value:
+A simple scale function with three arguments, domain, range, and value. Takes
+the value and converts it into a new number.
 
 ```js
 Transformer.transform([400, 600], [1, 0], 400); // 1
@@ -208,7 +363,8 @@ myTransform(600); // 0
 #### `Transformer.transformObj()`
 
 A slightly more complicated, more powerful version of the previous function. It
-takes an object with input values and output values:
+takes an object with input values and output values to allow scales with
+multiple stages:
 
 ```js
 const myTransform = Transformer.transformObj({
@@ -228,58 +384,124 @@ If the y position of the page were passed in and the result used as an opacity,
 the above code would make the element start visible, then fade it out between
 400px and 600px, then fade it back in again between 1000px and 1200px.
 
-This function has two more arguments, `loopBy` and `easing`, and I need to
-write documentation for them. `loopBy` is a number after which the transform
-should loop back to the beginning, and `easing` is a function which is given
-a number between 0 and 1 and returns a number between 0 and 1 to transform the
-actual value of the transform.
+This function also takes two more arguments, `loopBy` and `easing`.
 
-### Stopping the animations
+##### `loopBy`
 
-Calling `new Transformer()` returns an object with a `.stop()` method which can
-be called to stop the animations from running.
-
-There's also a `.start()` method that can be used to start it again.
-
-### Resetting the animations
-
-To restore the elements to their original transforms and visiblities, call
-`.reset()` on the transformer you want to reset.
-
-
-## Needs documenting
-
-### Setting multiple properties at once:
+This argument allows you to specify a point after which the animation should
+repeat itself. For example, if you want to animate the scale from 0.5 to 1 and
+back again over time, you could do this:
 
 ```js
-transformer = new Transformer([
-    {
-        el: mock,
-        styles: [
-            [['clip-path', 'webkit-clip-path'], function (i) {
-                return 'circle(50px at 0% 100px)';
-            }]
-        ]
-    }
+const scaleTransform = Transformer.transformObj({
+  0: 0.5,
+  30: 1
+}, 60);
+
+scaleTransform(i); // Animates from 0.5 to 1 and back repeatedly as i increases
+```
+
+##### `easing`
+
+`Transformer.transformObj()` has basic support for easings. You can either pass
+in the name of the easing—you can find the built in ones [here][easings]—or you
+can pass in you own easing function.
+
+Unlike standard easing functions, they're given one argument and return one
+number: both percentages (number between 0 and 1).
+
+For example, a quadratic ease in (`easeInQuad`) looks like this:
+
+```js
+const easeInQuad = (x) => x * x;
+```
+
+Pull requests adding other easings very welcome!
+
+### visible & setVisible
+
+Transform objects also accept another property, `visible`. This should be two
+numbers where when the y position of the page is outside of these values, the
+element will not be animated. This helps ensure that if you have a lot of
+elements on the page, the ones that aren't being displayed aren't wasting
+resources.
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    visible: [0, 600],
+    styles: [
+      ['opacity', function (y) {
+        return Transformer.transform([500, 600], [1, 0], y);
+      }]
+    ]
+  }
 ]);
 ```
 
-### Changing the element to get the scroll position of
+You can also set the property on everything at once using the `setVisible()`
+method:
 
+```
+transforms.setVisible([500, 600]);
+```
+
+### Pausing and cancelling an animation
+
+It's possible to stop and start the animation using the `stop()` and `start()`
+methods. Stopping the animation will leave the currently animated properties
+exactly where they are, and stop `i` from increasing. Starting it again will
+resume things from where they were when the animation was stopped.
+
+The following will pause the animation for a second:
+
+```js
+transforms.stop();
+
+setTimeout(function () {
+  transforms.start();
+}, 1000);
+```
+
+There's also a `reset()` method for when you want to stop an animation and
+restore the transform and element displays to what they were to start off with
+(styles and attributes will be left as they were). This is useful if you need
+to reinitialise the animate when the window is resized:
+
+```js
+let transforms;
+
+function init() {
+  if (transforms) {
+    transforms.reset();
+  }
+  
+  transforms = new Transformer([ ... ]);
+}
+
+init();
+window.addEventListener('resize', debounce(init));
+```
+
+### Changing the element to get the scroll position from
+
+By default, transform-when gets the scroll positions from the `window`, but
+this isn't always what you want. To change it, just change the `scrollElement`
+property to contain a selector for the element you want to get the scroll
+position of instead:
 
 ```js
 transformer.scrollElement = '.my-scroll-element';
 ```
 
-### loopBy and easing
+## Happy animating :)
 
-### Layout thrashing prevention
-
-### General internals and how it works
-
+🎉
 
 ## License
 
 Released under the MIT license.
 
 [SamKnows]: http://samknows.com/
+[easings]: https://github.com/SamKnows/transform-when/blob/master/src/transform-helpers.js#L26
