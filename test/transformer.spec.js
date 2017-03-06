@@ -919,4 +919,87 @@ describe('Transformer', function () {
 			}, 5);
 		});
 	});
+
+	describe('Custom variables', function () {
+		it('should allow custom variables', function (done) {
+			var lastI = -1;
+			var called = 0;
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (customI) {
+							called++;
+							lastI = customI;
+						}]
+					]
+				}
+			]);
+
+			var i = 0;
+			transformer.addVariable('customI', function () {
+				return i++;
+			});
+
+			interval = setInterval(function () {
+				(lastI + 1).should.equal(called);
+
+				if (called > 3) {
+					clearInterval(interval);
+					done();
+				}
+			}, 5);
+		});
+
+		it('should only call transform function when changed', function (done) {
+			var called = 0;
+			var lastMock;
+
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (mock) {
+							called++;
+							lastMock = mock;
+						}]
+					]
+				}
+			]);
+
+			var mockVar = 10;
+			transformer.addVariable('mock', function () {
+				return mockVar;
+			});
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					clearInterval(interval);
+
+					lastMock.should.equal(10);
+
+					setTimeout(function () {
+						called.should.equal(1);
+
+						mockVar = 25;
+
+						interval = setInterval(function () {
+							if (called === 2) {
+								clearInterval(interval);
+
+								lastMock.should.equal(25);
+
+								setTimeout(function () {
+									called.should.equal(2);
+
+									done();
+								}, 35);
+							}
+						}, 5);
+					}, 35);
+				}
+			}, 5);
+		});
+	});
 });

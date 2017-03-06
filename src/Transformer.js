@@ -18,10 +18,9 @@ export default function Transformer(transforms) {
 	this.transforms = Array.isArray(transforms) ? transforms : [transforms];
 	this.visible = undefined;
 
-	this._lastX = -1;
-	this._lastY = -1;
-
+	this._last = {};
 	this._actions = {};
+	this._customVariables = {};
 
 	this.start();
 }
@@ -120,6 +119,16 @@ Transformer.prototype.trigger = function triggerAction(name, duration) {
 };
 
 /**
+ * Adds a custom variable that can be used in transformer functions.
+ *
+ * @param {string} name The name to use for the variables
+ * @param {function} getter The function to call to get the variable value.
+ */
+Transformer.prototype.addVariable = function addCustomVar(name, getter) {
+	this._customVariables[name] = getter;
+};
+
+/**
  * The first function called on requestAnimationFrame. This one calculates the
  * properties to change and what to change them to, but doesn't apply the
  * changes to the DOM. Do not do anything to invalidate the DOM in this
@@ -131,7 +140,7 @@ Transformer.prototype.trigger = function triggerAction(name, duration) {
  *
  * @private
  */
-Transformer.prototype._setup = function setupFrame(x, y) {
+Transformer.prototype._setup = function setupFrame(vars) {
 	if (!this.active) {
 		return;
 	}
@@ -168,11 +177,11 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 		if (transform.visible || this.visible) {
 			let isHidden = true;
 			if (this.visible) {
-				isHidden = y < this.visible[0] || y > this.visible[1];
+				isHidden = vars.y < this.visible[0] || vars.y > this.visible[1];
 			}
 
 			if (isHidden && transform.visible) {
-				isHidden = y < transform.visible[0] || y > transform.visible[1];
+				isHidden = vars.y < transform.visible[0] || vars.y > transform.visible[1];
 			}
 
 			transform._stagedData.isHidden = isHidden;
@@ -184,7 +193,9 @@ Transformer.prototype._setup = function setupFrame(x, y) {
 			transform._stagedData.isHidden = undefined;
 		}
 
-		const args = { x, y, actions, actionEnded: this._actionEnded, i: this.i, lastX: this._lastX, lastY: this._lastY };
+		const args = Object.assign({
+			actions, actionEnded: this._actionEnded, i: this.i, last: this._last
+		}, vars);
 
 		if (transform.transforms) {
 			let transforms = transform.transforms
@@ -276,7 +287,7 @@ Transformer.prototype._setup = function setupFrame(x, y) {
  *
  * @private
  */
-Transformer.prototype._frame = function transformFrame(x, y) {
+Transformer.prototype._frame = function transformFrame(vars) {
 	if (!this.active) {
 		return;
 	}
@@ -356,6 +367,5 @@ Transformer.prototype._frame = function transformFrame(x, y) {
 	}
 
 	this.i++;
-	this._lastX = x;
-	this._lastY = y;
+	this._last = vars;
 };

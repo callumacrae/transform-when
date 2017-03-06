@@ -30,8 +30,16 @@ function runFrames() {
 
 		const position = scrollPositions[transform.scrollElement];
 
+		const vars = { x: position.x, y: position.y };
+		Object.keys(transform._customVariables).forEach((varName) => {
+			vars[varName] = transform._customVariables[varName].call(transform);
+		});
+
+		// This is ugly and I feel bad
+		transform._tmpVarCache = vars;
+
 		try {
-			transform._setup(position.x, position.y);
+			transform._setup(vars);
 		} catch(e) {
 			console.error('Problem during setup', e);
 		}
@@ -40,10 +48,8 @@ function runFrames() {
 	// The second loop calls "frame", which sets all the previously calculated values
 	// It's done in two loops to avoid layout thrashing
 	for (let transform of transformers) {
-		const position = scrollPositions[transform.scrollElement];
-
 		try {
-			transform._frame(position.x, position.y);
+			transform._frame(transform._tmpVarCache);
 		} catch (e) {
 			console.error('Problem during frame', e);
 		}

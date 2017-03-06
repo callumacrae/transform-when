@@ -177,6 +177,31 @@ The `.trigger()` function returns a promise which resolves when the action
 completes. It uses native promises, and will return `undefined` when
 `window.Promise` is undefined.
 
+#### Custom variables
+
+It's possible to add your own variables.
+
+```js
+const transforms = new Transformer([
+  {
+    el: document.querySelector('.my-element'),
+    styles: [
+      ['opacity', function (myCustomVariable) {
+      
+      }]
+    ]
+  }
+]);
+
+transforms.addVariable('myCustomVariable', function () {
+  // Return what you want `myCustomVariable` to equal
+});
+```
+
+The transform function is still only called when the variable is changed - 
+except for the way it is generated, custom variables are treated exactly the
+same as scroll position, time and user actions.
+
 #### Minifiers
 
 Minifiers will, by default, break transform-when if they rename variables. The

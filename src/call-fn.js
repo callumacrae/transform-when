@@ -38,12 +38,10 @@ export default function callFn(type, name, fn, transform, unit, args) {
 		changed = true;
 	}
 
-	if (fn.args.includes('x') && args.x !== args.lastX) {
-		changed = true;
-	}
-
-	if (fn.args.includes('y') && args.y !== args.lastY) {
-		changed = true;
+	if (!changed) {
+		changed = Object.keys(args.last).some((arg) => {
+			return fn.args.includes(arg) && args[arg] !== args.last[arg];
+		});
 	}
 
 	// If the arguments haven't changed, don't call the function because the
