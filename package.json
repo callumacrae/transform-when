@@ -1,6 +1,6 @@
 {
   "name": "transform-when",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A library for handing animations combining page position and time",
   "main": "dist/transform-when.js",
   "esnext:main": "src/index.js",
