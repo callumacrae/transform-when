@@ -4,7 +4,8 @@
 
 ![](https://giant.gfycat.com/ScarceImaginativeLamprey.gif)
 
-(For a full demo at 60fps, see: coming soon)
+For a full demo at 60fps, see: [samknows.com][SamKnows], or for a simpler demo,
+check out [this article I wrote].
 
 ## Installation
 
@@ -528,5 +529,6 @@ transformer.scrollElement = '.my-scroll-element';
 
 Released under the MIT license.
 
-[SamKnows]: http://samknows.com/
+[SamKnows]: https://samknows.com/
 [easings]: https://github.com/SamKnows/transform-when/blob/master/src/transform-helpers.js#L26
+[this article I wrote]: http://macr.ae/article/transform-when.html
