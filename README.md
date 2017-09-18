@@ -518,8 +518,37 @@ property to contain a selector for the element you want to get the scroll
 position of instead:
 
 ```js
-transformer.scrollElement = '.my-scroll-element';
+transforms.scrollElement = '.my-scroll-element';
 ```
+
+### Configuring how `i` increases
+
+The default behaviour of `i` is to increase by 1 on each frame, up to a maximum
+of 60 times. On most monitors, this just means that `i` will be the number of
+the frame, because most monitors don't go above 60fps. On monitors that are
+capable of a higher fps such as gaming monitors, however, this means that `i`
+won't necessarily be a whole number. If the monitor runs at 120fps, `i` will
+increase by about 0.5 120 times a second.
+
+This is configurable! There are three options, `belowOptimal` and
+`aboveOptimal`, each of which can be set to "count" (to increase by 1 each
+frame) or "time" (to increase so that `i` increases by 60 per second). By
+default, `belowOptimal` is set to "count" and `aboveOptimal` is set to "time".
+
+You may want to change `belowOptimal` to "time". You probably don't want to
+change `aboveOptimal` to "count".
+
+```js
+transforms.iIncrease.belowOptimal = 'time';
+```
+
+You can also configure the optimal FPS. By default it's 60, but you can change
+it:
+
+```js
+transforms.iIncrease.optimalFps = 120;
+```
+
 
 ## Happy animating :)
 

@@ -1002,4 +1002,64 @@ describe('Transformer', function () {
 			}, 5);
 		});
 	});
+
+	describe('i increase rate', function () {
+    it('should increase by 1 when fps is less than optimal and mode is "count"', function (done) {
+      var called = 0;
+      var lastI;
+
+      transformer = new Transformer([
+        {
+          el: mock,
+          styles: [
+            ['opacity', function (i) {
+              called++;
+              lastI = i;
+            }]
+          ]
+        }
+      ]);
+
+      transformer.iIncrease.optimalFps = 120;
+
+      interval = setInterval(function () {
+        if (called === 3) {
+          clearInterval(interval);
+
+          lastI.should.equal(2);
+
+          done();
+        }
+      }, 5);
+    });
+
+    it('should increase by < 1 when fps is more than optimal and mode is "time"', function (done) {
+      var called = 0;
+      var lastI;
+
+      transformer = new Transformer([
+        {
+          el: mock,
+          styles: [
+            ['opacity', function (i) {
+              called++;
+              lastI = i;
+            }]
+          ]
+        }
+      ]);
+
+      transformer.iIncrease.optimalFps = 20;
+
+      interval = setInterval(function () {
+        if (called === 3) {
+          clearInterval(interval);
+
+          lastI.should.be.within(1.2, 1.6);
+
+          done();
+        }
+      }, 5);
+    });
+	});
 });

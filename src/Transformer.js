@@ -27,6 +27,11 @@ export default function Transformer(transforms) {
 
 // Selector to get scroll position from. On the prototype so we can set globally
 Transformer.prototype.scrollElement = 'window';
+Transformer.prototype.iIncrease = {
+	belowOptimal: 'count',
+	aboveOptimal: 'time',
+	optimalFps: 60,
+};
 
 /**
  * Stop the transformer from running
@@ -366,6 +371,22 @@ Transformer.prototype._frame = function transformFrame(vars) {
 		}
 	}
 
-	this.i++;
+	const currentTime = window.performance ? performance.now() : Date.now();
+	const deltaTime = currentTime - this._lastTime;
+
+	const increaseBy = {
+		count: 1,
+		time: deltaTime / (1000 / this.iIncrease.optimalFps),
+	};
+
+	if (!this._lastTime) {
+		this.i++;
+	} else if (deltaTime > 1000 / this.iIncrease.optimalFps) {
+		this.i += increaseBy[this.iIncrease.belowOptimal];
+	} else {
+    this.i += increaseBy[this.iIncrease.aboveOptimal];
+	}
+
 	this._last = vars;
+	this._lastTime = currentTime;
 };
