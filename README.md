@@ -4,8 +4,8 @@
 
 ![](https://giant.gfycat.com/ScarceImaginativeLamprey.gif)
 
-For a full demo at 60fps, see: [samknows.com][SamKnows], or for a simpler demo,
-check out [this article I wrote].
+For a full demo at 60fps, see: ~samknows.com~ _(update: it has gone away now 😢)_,
+or for a simpler demo, check out [this article I wrote].
 
 ## Installation
 
