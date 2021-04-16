@@ -4,7 +4,7 @@
 
 ![](https://giant.gfycat.com/ScarceImaginativeLamprey.gif)
 
-For a full demo at 60fps, see: ~samknows.com~ _(update: it has gone away now 😢)_,
+For a full demo at 60fps, see: [samknows.com (archive.org)],
 or for a simpler demo, check out [this article I wrote].
 
 ## Installation
@@ -559,5 +559,6 @@ transforms.iIncrease.optimalFps = 120;
 Released under the MIT license.
 
 [SamKnows]: https://samknows.com/
+[samknows.com (archive.org)]: https://web.archive.org/web/20171203224250/https://samknows.com/
 [easings]: https://github.com/SamKnows/transform-when/blob/master/src/transform-helpers.js#L26
 [this article I wrote]: http://macr.ae/article/transform-when.html
