@@ -548,6 +548,28 @@ describe('Transformer', function () {
 		}, 20);
 	});
 
+	// This test doesn't work in phantomjs
+	it.skip('should support setting CSS variables', function (done) {
+		transformer = new Transformer([
+			{
+				el: mock,
+				properties: [
+					['--foo', function (i) {
+						return 'blue';
+					}]
+				]
+			}
+		]);
+
+		interval = setInterval(function () {
+			const property = mock.style.getPropertyValue('--foo');
+			if (property === 'blue') {
+				clearInterval(interval);
+				done();
+			}
+		}, 20);
+	});
+
 	describe('actions and triggers', function () {
 		it('should support triggering actions', function (done) {
 			var lastActions;
@@ -884,6 +906,34 @@ describe('Transformer', function () {
 			}, 5);
 		});
 
+		it('should not write property changes to DOM if they haven\'t changed', function (done) {
+			var called = 0;
+
+			var transformPart = {
+				el: mock,
+				properties: [
+					['--foo', function (i) {
+						called++;
+						return 'blue';
+					}]
+				]
+			};
+
+			transformer = new Transformer([ transformPart ]);
+
+			interval = setInterval(function () {
+				if (called === 1) {
+					transformPart._stagedData.props['--foo'].should.equal('blue');
+				}
+
+				if (called > 1) {
+					transformPart._stagedData.props['--foo'].toString().should.startWith('Symbol(unchanged)');
+					clearInterval(interval);
+					done();
+				}
+			}, 5);
+		});
+
 		it('should handle partial transform UNCHANGEDs', function (done) {
 			var called = 0;
 
@@ -1004,62 +1054,62 @@ describe('Transformer', function () {
 	});
 
 	describe('i increase rate', function () {
-    it('should increase by 1 when fps is less than optimal and mode is "count"', function (done) {
-      var called = 0;
-      var lastI;
+		it('should increase by 1 when fps is less than optimal and mode is "count"', function (done) {
+			var called = 0;
+			var lastI;
 
-      transformer = new Transformer([
-        {
-          el: mock,
-          styles: [
-            ['opacity', function (i) {
-              called++;
-              lastI = i;
-            }]
-          ]
-        }
-      ]);
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (i) {
+							called++;
+							lastI = i;
+						}]
+					]
+				}
+			]);
 
-      transformer.iIncrease.optimalFps = 120;
+			transformer.iIncrease.optimalFps = 120;
 
-      interval = setInterval(function () {
-        if (called === 3) {
-          clearInterval(interval);
+			interval = setInterval(function () {
+				if (called === 3) {
+					clearInterval(interval);
 
-          lastI.should.equal(2);
+					lastI.should.equal(2);
 
-          done();
-        }
-      }, 5);
-    });
+					done();
+				}
+			}, 5);
+		});
 
-    it('should increase by < 1 when fps is more than optimal and mode is "time"', function (done) {
-      var called = 0;
-      var lastI;
+		it('should increase by < 1 when fps is more than optimal and mode is "time"', function (done) {
+			var called = 0;
+			var lastI;
 
-      transformer = new Transformer([
-        {
-          el: mock,
-          styles: [
-            ['opacity', function (i) {
-              called++;
-              lastI = i;
-            }]
-          ]
-        }
-      ]);
+			transformer = new Transformer([
+				{
+					el: mock,
+					styles: [
+						['opacity', function (i) {
+							called++;
+							lastI = i;
+						}]
+					]
+				}
+			]);
 
-      transformer.iIncrease.optimalFps = 20;
+			transformer.iIncrease.optimalFps = 20;
 
-      interval = setInterval(function () {
-        if (called === 3) {
-          clearInterval(interval);
+			interval = setInterval(function () {
+				if (called === 3) {
+					clearInterval(interval);
 
-          lastI.should.be.within(1.2, 1.6);
+					lastI.should.be.within(1.2, 1.6);
 
-          done();
-        }
-      }, 5);
-    });
+					done();
+				}
+			}, 5);
+		});
 	});
 });

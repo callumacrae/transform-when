@@ -161,10 +161,10 @@ Transformer.prototype._setup = function setupFrame(vars) {
 	for (let transform of this.transforms) {
 		if (this.i === 0) {
 			// This is where data to be put into the DOM is stored until ._frame()
-			transform._stagedData = { styles: {}, attrs: {} };
+			transform._stagedData = { styles: {}, attrs: {}, props: {} };
 
 			// This is where data from the last run is kept so it can be compared for changes
-			transform._lastData = { styles: {}, attrs: {} };
+			transform._lastData = { styles: {}, attrs: {}, props: {} };
 
 			// Has to run before visible check
 			if (transform.transforms) {
@@ -259,6 +259,22 @@ Transformer.prototype._setup = function setupFrame(vars) {
 
 				if (value !== UNCHANGED) {
 					transform._lastData.attrs[attr] = value;
+				}
+			}
+		}
+
+		if (transform.properties) {
+			for (let [ prop, fn, unit = '' ] of transform.properties) {
+				let value = callFn('props', prop, fn, transform, unit, args);
+
+				if (value === transform._lastData.props[prop]) {
+					value = UNCHANGED;
+				}
+
+				transform._stagedData.props[prop] = value;
+
+				if (value !== UNCHANGED) {
+					transform._lastData.props[prop] = value;
 				}
 			}
 		}
@@ -369,6 +385,26 @@ Transformer.prototype._frame = function transformFrame(vars) {
 				});
 			}
 		}
+
+		if (transform.properties) {
+			for (let [ prop ] of transform.properties) {
+				const computed = transform._stagedData.props[prop];
+
+				if (computed === UNCHANGED) {
+					continue;
+				}
+
+				each(transform.el, (el) => {
+					if (Array.isArray(prop)) {
+						prop.forEach((attr) => {
+							el.style.setProperty(attr, computed);
+						});
+					} else {
+						el.style.setProperty(prop, computed);
+					}
+				});
+			}
+		}
 	}
 
 	const currentTime = window.performance ? performance.now() : Date.now();
@@ -384,7 +420,7 @@ Transformer.prototype._frame = function transformFrame(vars) {
 	} else if (deltaTime > 1000 / this.iIncrease.optimalFps) {
 		this.i += increaseBy[this.iIncrease.belowOptimal];
 	} else {
-    this.i += increaseBy[this.iIncrease.aboveOptimal];
+		this.i += increaseBy[this.iIncrease.aboveOptimal];
 	}
 
 	this._last = vars;

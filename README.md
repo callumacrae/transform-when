@@ -59,9 +59,10 @@ The above code sets up a fairly simple transformer: it sets the opacity of the
 element to 0 if `window.scrollY` reaches more than 600, and back to 1 if the
 user scrolls back up above 600px again.
 
-In addition to **styles**, transform-when can animate **attrs**, and
-**transforms**. transforms is a helper function, and will set the `transform`
-style on HTML elements and the `transform` property on SVG elements.
+In addition to **styles**, transform-when can animate **attrs**, **transforms**,
+and **properties** (CSS variables). transforms is a helper function, and will
+set the `transform` style on HTML elements and the `transform` property on SVG
+elements.
 
 Let's take a look at a longer example that uses all three:
 
@@ -87,6 +88,11 @@ const transforms = new Transformer([
       ['scale', function (y) {
         return Transformer.transform([500, 600], [1, 0.5], y);
       }]
+    ],
+    properties: [
+      ['--scrollX', function (x) {
+        return x;
+      }, 'px']
     ]
   }
 ]);
@@ -250,16 +256,17 @@ const transforms = new Transformer([
 
 ### Types of properties
 
-There are three types of properties, `styles`, `attrs` and `transforms`. The
-first two are both pretty simple: they just set styles and attributes of an
-element. Be careful animating attributes and styles that aren't the opacity:
-they are more expensive to animate than transforms and opacity, and might make
-your animation jerky.
+There are four types of properties, `styles`, `attrs`, `properties`, and
+`transforms`. The first three are both pretty simple: they just set styles and
+attributes of an element. Be careful animating attributes and styles that aren't
+the opacity: they are more expensive to animate than transforms and opacity,
+and might make your animation jerky.
 
-Each takes an array of three things: the property (style or attribute) to
-animate, the transform functions, and optionally the unit to use - it's better
-to let transform-when handle adding the unit, because it will also round the
-number for you.
+Each takes an array of three things: the property (style, attribute, or
+variable name) to animate, the transform functions, and optionally the unit to
+use - it's better to do it this way and let transform-when handle adding the
+unit instead of returning the unit in the string yourself, because it will also
+round the number for you.
 
 Let's take a look at an example:
 
